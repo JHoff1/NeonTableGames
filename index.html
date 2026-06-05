@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Night Table Games - Blackjack</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="table-shell">
+      <section class="game-top" aria-label="Game status">
+        <div>
+          <p class="eyebrow">Blackjack</p>
+          <h1>Night Table Games</h1>
+        </div>
+        <div class="stats">
+          <div>
+            <span>Bankroll</span>
+            <strong id="bankroll">$1,000</strong>
+          </div>
+          <div>
+            <span>Bet</span>
+            <strong id="bet">$0</strong>
+          </div>
+          <div>
+            <span>Cards</span>
+            <strong id="shoe">52</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="felt" aria-live="polite">
+        <div class="dealer-zone hand-zone">
+          <div class="zone-header">
+            <h2>Dealer</h2>
+            <span id="dealer-total" class="total">0</span>
+          </div>
+          <div id="dealer-hand" class="hand"></div>
+        </div>
+
+        <div class="message-row">
+          <p id="message">Place your bet to start a hand.</p>
+        </div>
+
+        <div class="player-zone hand-zone">
+          <div class="zone-header">
+            <h2 id="player-heading">Player</h2>
+            <span id="player-total" class="total">0</span>
+          </div>
+          <div id="player-hand" class="player-hands"></div>
+        </div>
+      </section>
+
+      <section class="controls" aria-label="Game controls">
+        <div class="chips" aria-label="Bet chips">
+          <button class="chip" data-chip="5" data-tooltip="Add $5 to your bet">$5</button>
+          <button class="chip" data-chip="25" data-tooltip="Add $25 to your bet">$25</button>
+          <button class="chip" data-chip="100" data-tooltip="Add $100 to your bet">$100</button>
+          <button class="chip" data-chip="500" data-tooltip="Add $500 to your bet">$500</button>
+        </div>
+        <div class="actions">
+          <button id="clear-bet" class="secondary" data-tooltip="Return your current bet to your bankroll">Clear</button>
+          <button id="deal" class="primary" data-tooltip="Start a hand with your current bet">Deal</button>
+          <button id="hit" data-tooltip="Take one more card">Hit</button>
+          <button id="stand" data-tooltip="End your turn and let the dealer play">Stand</button>
+          <button id="double" data-tooltip="Double your bet, take one card, then stand">Double</button>
+          <button id="split" data-tooltip="Split a matching pair into two hands">Split</button>
+          <button id="new-game" class="secondary" data-tooltip="Reset the table or move to the next hand">New Game</button>
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
