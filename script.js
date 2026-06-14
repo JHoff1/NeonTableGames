@@ -211,6 +211,7 @@ function saveHighBankroll() {
 }
 
 function updateHighBankroll() {
+  if (state.tutorial.active) return;
   if (state.bankroll <= state.highBankroll) return;
   state.highBankroll = state.bankroll;
   saveHighBankroll();
