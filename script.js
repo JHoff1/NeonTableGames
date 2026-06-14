@@ -20,9 +20,14 @@ const ranks = [
   { label: "K", value: 10 },
 ];
 
+const highBankrollKey = "neontablegamesHighBankroll";
+const legacyHighBankrollKey = "blackjackHighBankroll";
+
 const state = {
   bankroll: 1000,
+  highBankroll: readHighBankroll(),
   bet: 0,
+  betChips: [],
   deck: [],
   hands: [],
   activeHand: 0,
@@ -34,14 +39,18 @@ const state = {
 
 const els = {
   bankroll: document.querySelector("#bankroll"),
+  highBankroll: document.querySelector("#high-bankroll"),
   bet: document.querySelector("#bet"),
   shoe: document.querySelector("#shoe"),
   dealerTotal: document.querySelector("#dealer-total"),
   playerTotal: document.querySelector("#player-total"),
   playerHeading: document.querySelector("#player-heading"),
+  felt: document.querySelector(".felt"),
+  playerZone: document.querySelector(".player-zone"),
   dealerHand: document.querySelector("#dealer-hand"),
   playerHand: document.querySelector("#player-hand"),
   message: document.querySelector("#message"),
+  tableBetStack: document.querySelector("#table-bet-stack"),
   clearBet: document.querySelector("#clear-bet"),
   deal: document.querySelector("#deal"),
   hit: document.querySelector("#hit"),
@@ -49,6 +58,7 @@ const els = {
   double: document.querySelector("#double"),
   split: document.querySelector("#split"),
   newGame: document.querySelector("#new-game"),
+  nextHand: document.querySelector("#next-hand"),
   chips: [...document.querySelectorAll("[data-chip]")],
   tooltip: null,
 };
@@ -99,6 +109,50 @@ function handValue(cards) {
   return total;
 }
 
+function readHighBankroll() {
+  try {
+    return Math.max(
+      1000,
+      Number(localStorage.getItem(highBankrollKey)) ||
+        Number(localStorage.getItem(legacyHighBankrollKey)) ||
+        1000
+    );
+  } catch {
+    return 1000;
+  }
+}
+
+function saveHighBankroll() {
+  try {
+    localStorage.setItem(highBankrollKey, String(state.highBankroll));
+  } catch {
+    // Local storage can be unavailable in some browser privacy modes.
+  }
+}
+
+function updateHighBankroll() {
+  if (state.bankroll <= state.highBankroll) return;
+  state.highBankroll = state.bankroll;
+  saveHighBankroll();
+}
+
+function isSoftTotal(cards) {
+  let total = cards.reduce((sum, card) => sum + card.value, 0);
+  let aces = cards.filter((card) => card.label === "A").length;
+
+  while (total > 21 && aces > 0) {
+    total -= 10;
+    aces -= 1;
+  }
+
+  return aces > 0;
+}
+
+function dealerShouldHit() {
+  const total = handValue(state.dealer);
+  return total < 17 || (total === 17 && isSoftTotal(state.dealer));
+}
+
 function isBlackjack(hand) {
   return !hand.wasSplit && hand.cards.length === 2 && handValue(hand.cards) === 21;
 }
@@ -115,6 +169,7 @@ function addBet(amount) {
   if (state.phase !== "betting" || amount > state.bankroll) return;
   state.bankroll -= amount;
   state.bet += amount;
+  state.betChips.push(amount);
   state.message = `${money(state.bet)} ready. Deal when you're set.`;
   render();
 }
@@ -123,6 +178,7 @@ function clearBet() {
   if (state.phase !== "betting") return;
   state.bankroll += state.bet;
   state.bet = 0;
+  state.betChips = [];
   state.message = "Place your bet to start a hand.";
   render();
 }
@@ -183,6 +239,7 @@ function doubleDown() {
   if (state.phase !== "playing" || !canDoubleHand(hand)) return;
 
   state.bankroll -= hand.bet;
+  state.betChips.push(hand.bet);
   hand.bet *= 2;
   hand.cards.push(drawCard());
   hand.status = handValue(hand.cards) > 21 ? "bust" : "stood";
@@ -195,6 +252,7 @@ function splitHand() {
   if (state.phase !== "playing" || !canSplitHand(hand)) return;
 
   state.bankroll -= hand.bet;
+  state.betChips.push(hand.bet);
   const [first, second] = hand.cards;
   state.hands = [
     { cards: [first, drawCard()], bet: hand.bet, status: "playing", result: "", wasSplit: true },
@@ -246,7 +304,7 @@ function settleRound() {
   const hasNaturalBlackjack = state.hands.some((hand) => isBlackjack(hand));
 
   if (dealerShouldPlay() && !hasNaturalBlackjack) {
-    while (handValue(state.dealer) < 17) {
+    while (dealerShouldHit()) {
       state.dealer.push(drawCard());
     }
   }
@@ -284,10 +342,11 @@ function settleRound() {
   });
 
   state.bankroll += totalPayout;
+  updateHighBankroll();
   state.message = roundSummary(totalPayout);
 
   if (state.bankroll <= 0) {
-    state.message = "Table closed. Start a new game.";
+    state.message = "You're out of chips. Start a new game to reset your bankroll.";
   }
 
   render();
@@ -314,16 +373,20 @@ function resetRound() {
   if (state.phase === "playing") return;
   state.hands = [];
   state.dealer = [];
+  state.betChips = [];
   state.activeHand = 0;
   state.revealDealer = false;
   state.phase = "betting";
-  state.message = state.bankroll > 0 ? "Place your bet to start a hand." : "Table closed. Start a new game.";
+  state.message = state.bankroll > 0
+    ? "Place your bet to start a hand."
+    : "You're out of chips. Start a new game to reset your bankroll.";
   render();
 }
 
 function newGame() {
   state.bankroll = 1000;
   state.bet = 0;
+  state.betChips = [];
   state.deck = buildDeck();
   state.hands = [];
   state.activeHand = 0;
@@ -376,7 +439,7 @@ function renderPlayerHands() {
     const meta = document.createElement("div");
     meta.className = "hand-meta";
     meta.innerHTML = `
-      <span>${state.hands.length > 1 ? `Hand ${index + 1}` : "Your Hand"}</span>
+      <span>${state.hands.length > 1 ? `Hand ${index + 1}` : "Player"}</span>
       <strong>${handValue(hand.cards)}</strong>
     `;
 
@@ -391,9 +454,72 @@ function renderPlayerHands() {
       <strong>${isActive ? "Active" : hand.result || hand.status}</strong>
     `;
 
-    panel.append(meta, cards, footer);
+    const chipRail = document.createElement("div");
+    chipRail.className = "hand-chip-rail";
+    if (state.hands.length === 1 && state.phase !== "betting") {
+      renderChipStack(chipRail, {
+        chips: chipAmountsForBet(hand.bet),
+        visibleLimit: 4,
+      });
+    }
+
+    if (state.hands.length > 1) {
+      renderChipStack(chipRail, {
+        chips: chipAmountsForBet(hand.bet),
+        visibleLimit: 4,
+      });
+    }
+
+    panel.append(meta, chipRail, cards, footer);
     els.playerHand.append(panel);
   });
+}
+
+function renderChipStack(target, options = {}) {
+  target.replaceChildren();
+
+  const visibleLimit = options.visibleLimit || 12;
+  const chips = options.chips || state.betChips;
+  const visibleChips = chips.slice(-visibleLimit);
+  const hiddenCount = chips.length - visibleChips.length;
+  target.classList.toggle("has-chips", visibleChips.length > 0);
+
+  visibleChips.forEach((amount, index) => {
+    const chip = document.createElement("span");
+    chip.className = "stack-chip";
+    chip.dataset.chip = String(amount);
+    chip.innerHTML = `<span class="chip-label"><span class="chip-dollar">$</span>${amount}</span>`;
+    chip.style.setProperty("--stack-index", String(index));
+    target.append(chip);
+  });
+
+  if (hiddenCount > 0) {
+    const extra = document.createElement("span");
+    extra.className = "stack-extra";
+    extra.textContent = `+${hiddenCount}`;
+    target.append(extra);
+  }
+}
+
+function chipAmountsForBet(amount) {
+  const chips = [];
+  let remaining = amount;
+  [500, 100, 25, 5].forEach((chip) => {
+    while (remaining >= chip) {
+      chips.push(chip);
+      remaining -= chip;
+    }
+  });
+  return chips.length > 0 ? chips : [amount];
+}
+
+function renderBetStack() {
+  if (state.hands.length > 0) {
+    els.tableBetStack.replaceChildren();
+    els.tableBetStack.classList.remove("has-chips");
+    return;
+  }
+  renderChipStack(els.tableBetStack, { visibleLimit: 10 });
 }
 
 function render() {
@@ -404,17 +530,19 @@ function render() {
   const inPlaying = state.phase === "playing";
 
   els.bankroll.textContent = money(state.bankroll);
+  els.highBankroll.textContent = money(state.highBankroll);
   els.bet.textContent = money(tableBet());
   els.shoe.textContent = String(state.deck.length);
   els.dealerTotal.textContent = String(visibleDealerTotal || 0);
   els.playerTotal.textContent = String(hand ? handValue(hand.cards) : 0);
-  els.playerHeading.textContent = state.hands.length > 1 && inPlaying
-    ? `Player - Hand ${state.activeHand + 1} of ${state.hands.length}`
-    : "Player";
+  els.felt.classList.toggle("has-split-hands", state.hands.length > 1);
+  els.playerZone.classList.toggle("has-split-hands", state.hands.length > 1);
+  els.playerHeading.textContent = "Player";
   els.message.textContent = state.message;
 
   renderHand(els.dealerHand, state.dealer, hiddenDealer);
   renderPlayerHands();
+  renderBetStack();
 
   els.chips.forEach((button) => {
     const amount = Number(button.dataset.chip);
@@ -426,7 +554,7 @@ function render() {
   els.stand.disabled = !inPlaying;
   els.double.disabled = !inPlaying || !canDoubleHand(hand);
   els.split.disabled = !inPlaying || !canSplitHand(hand);
-  els.newGame.textContent = state.phase === "settled" && state.bankroll > 0 ? "Next Hand" : "New Game";
+  els.nextHand.disabled = state.phase !== "settled" || state.bankroll <= 0;
 }
 
 function showTooltip(button) {
@@ -473,13 +601,8 @@ els.hit.addEventListener("click", hit);
 els.stand.addEventListener("click", stand);
 els.double.addEventListener("click", doubleDown);
 els.split.addEventListener("click", splitHand);
-els.newGame.addEventListener("click", () => {
-  if (state.phase === "settled") {
-    resetRound();
-  } else {
-    newGame();
-  }
-});
+els.newGame.addEventListener("click", newGame);
+els.nextHand.addEventListener("click", resetRound);
 
 document.querySelectorAll("[data-tooltip]").forEach((button) => {
   button.addEventListener("mouseenter", () => showTooltip(button));

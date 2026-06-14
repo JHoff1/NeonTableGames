@@ -1,6 +1,6 @@
-# Blackjack Web App
+# Neon Table Games Blackjack
 
-A static blackjack table you can host on any web server.
+A static blackjack table from Neon Table Games that you can host on any web server.
 
 ## Run Locally
 

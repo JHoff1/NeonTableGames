@@ -3,29 +3,36 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Night Table Games - Blackjack</title>
+    <title>Neon Table Games - Blackjack</title>
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
     <main class="table-shell">
       <section class="game-top" aria-label="Game status">
-        <div>
+        <div class="title-block">
           <p class="eyebrow">Blackjack</p>
-          <h1>Night Table Games</h1>
+          <h1>Neon Table Games</h1>
+          <button id="new-game" class="secondary top-reset" data-tooltip="Reset the table and restore your starting bankroll">NEW GAME</button>
         </div>
-        <div class="stats">
-          <div>
-            <span>Bankroll</span>
-            <strong id="bankroll">$1,000</strong>
-          </div>
-          <div>
-            <span>Bet</span>
-            <strong id="bet">$0</strong>
-          </div>
-          <div>
-            <span>Cards</span>
-            <strong id="shoe">52</strong>
+        <div class="top-status">
+          <div class="stats">
+            <div>
+              <span>Bankroll</span>
+              <strong id="bankroll">$1,000</strong>
+            </div>
+            <div>
+              <span>Bet</span>
+              <strong id="bet">$0</strong>
+            </div>
+            <div>
+              <span>Cards</span>
+              <strong id="shoe">52</strong>
+            </div>
+            <div class="best-run">
+              <span>Best Run</span>
+              <strong id="high-bankroll">$1,000</strong>
+            </div>
           </div>
         </div>
       </section>
@@ -40,6 +47,11 @@
         </div>
 
         <div class="message-row">
+          <div class="table-rules" aria-label="Table rules">
+            <span>Blackjack pays 3 to 2</span>
+            <span>Dealer hits soft 17</span>
+          </div>
+          <div id="table-bet-stack" class="table-bet-stack" aria-label="Wager on table"></div>
           <p id="message">Place your bet to start a hand.</p>
         </div>
 
@@ -54,19 +66,19 @@
 
       <section class="controls" aria-label="Game controls">
         <div class="chips" aria-label="Bet chips">
-          <button class="chip" data-chip="5" data-tooltip="Add $5 to your bet">$5</button>
-          <button class="chip" data-chip="25" data-tooltip="Add $25 to your bet">$25</button>
-          <button class="chip" data-chip="100" data-tooltip="Add $100 to your bet">$100</button>
-          <button class="chip" data-chip="500" data-tooltip="Add $500 to your bet">$500</button>
+          <button class="chip" data-chip="5" data-tooltip="Add $5 to your bet"><span class="chip-dollar">$</span>5</button>
+          <button class="chip" data-chip="25" data-tooltip="Add $25 to your bet"><span class="chip-dollar">$</span>25</button>
+          <button class="chip" data-chip="100" data-tooltip="Add $100 to your bet"><span class="chip-dollar">$</span>100</button>
+          <button class="chip" data-chip="500" data-tooltip="Add $500 to your bet"><span class="chip-dollar">$</span>500</button>
         </div>
         <div class="actions">
           <button id="clear-bet" class="secondary" data-tooltip="Return your current bet to your bankroll">Clear</button>
           <button id="deal" class="primary" data-tooltip="Start a hand with your current bet">Deal</button>
-          <button id="hit" data-tooltip="Take one more card">Hit</button>
+          <button id="split" data-tooltip="Split a matching pair into two hands">Split</button>
           <button id="stand" data-tooltip="End your turn and let the dealer play">Stand</button>
           <button id="double" data-tooltip="Double your bet, take one card, then stand">Double</button>
-          <button id="split" data-tooltip="Split a matching pair into two hands">Split</button>
-          <button id="new-game" class="secondary" data-tooltip="Reset the table or move to the next hand">New Game</button>
+          <button id="hit" data-tooltip="Take one more card">Hit</button>
+          <button id="next-hand" class="secondary" data-tooltip="Clear the table and keep your current bankroll">Next Hand</button>
         </div>
       </section>
     </main>
