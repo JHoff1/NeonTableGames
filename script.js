@@ -604,10 +604,14 @@ els.split.addEventListener("click", splitHand);
 els.newGame.addEventListener("click", newGame);
 els.nextHand.addEventListener("click", resetRound);
 
+const supportsHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
 document.querySelectorAll("[data-tooltip]").forEach((button) => {
-  button.addEventListener("mouseenter", () => showTooltip(button));
+  if (supportsHover) {
+    button.addEventListener("mouseenter", () => showTooltip(button));
+    button.addEventListener("mouseleave", hideTooltip);
+  }
   button.addEventListener("focus", () => showTooltip(button));
-  button.addEventListener("mouseleave", hideTooltip);
   button.addEventListener("blur", hideTooltip);
 });
 

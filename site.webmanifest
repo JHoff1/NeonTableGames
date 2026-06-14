@@ -1,0 +1,33 @@
+{
+  "name": "Neon Table Games",
+  "short_name": "Neon Games",
+  "description": "Free browser table games from Neon Table Games.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#071913",
+  "theme_color": "#0e5f49",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Play Blackjack",
+      "short_name": "Blackjack",
+      "description": "Open the free online blackjack table.",
+      "url": "/blackjack/",
+      "icons": [
+        {
+          "src": "/favicon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ]
+}

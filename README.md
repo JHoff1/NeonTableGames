@@ -1,6 +1,6 @@
-# Neon Table Games Blackjack
+# Neon Table Games
 
-A static blackjack table from Neon Table Games that you can host on any web server.
+A static table games site from Neon Table Games. The homepage introduces the site and links to the blackjack game at `/blackjack/`.
 
 ## Run Locally
 
@@ -11,8 +11,16 @@ Open `index.html` in a browser, or serve this folder with any static server.
 Upload these files to a static host such as GitHub Pages, Netlify, Vercel, Cloudflare Pages, or an S3/static website bucket:
 
 - `index.html`
+- `blackjack/index.html`
+- `blackjack-rules/index.html`
 - `styles.css`
 - `script.js`
+- `favicon.svg`
+- `site.webmanifest`
+- `robots.txt`
+- `sitemap.xml`
+- `_redirects`
+- `_headers`
 
 ## Gameplay
 

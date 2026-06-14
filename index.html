@@ -3,86 +3,91 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Neon Table Games - Blackjack</title>
+    <title>Neon Table Games | Free Online Table Games</title>
+    <meta name="description" content="Play free browser table games from Neon Table Games. Start with online blackjack, practice classic rules, and enjoy fast games with no signup.">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#0e5f49">
+    <link rel="canonical" href="https://neontablegames.com/">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="site.webmanifest">
+    <meta property="og:site_name" content="Neon Table Games">
+    <meta property="og:title" content="Neon Table Games | Free Online Table Games">
+    <meta property="og:description" content="Play free browser table games with no signup. Start with blackjack from Neon Table Games.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://neontablegames.com/">
+    <meta property="og:image" content="https://neontablegames.com/favicon.svg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Neon Table Games | Free Online Table Games">
+    <meta name="twitter:description" content="Play free browser table games with no signup.">
+    <meta name="twitter:image" content="https://neontablegames.com/favicon.svg">
     <link rel="stylesheet" href="styles.css">
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Neon Table Games",
+        "url": "https://neontablegames.com/",
+        "description": "Free browser table games with no signup.",
+        "publisher": {
+          "@type": "Organization",
+          "name": "Neon Table Games",
+          "url": "https://neontablegames.com/"
+        },
+        "inLanguage": "en-US"
+      }
+    </script>
   </head>
   <body>
-    <main class="table-shell">
-      <section class="game-top" aria-label="Game status">
-        <div class="title-block">
-          <p class="eyebrow">Blackjack</p>
-          <h1>Neon Table Games</h1>
-          <button id="new-game" class="secondary top-reset" data-tooltip="Reset the table and restore your starting bankroll">NEW GAME</button>
+    <main class="home-shell">
+      <section class="home-hero" aria-labelledby="home-title">
+        <nav class="home-nav" aria-label="Primary navigation">
+          <a href="/" aria-current="page">Neon Table Games</a>
+        </nav>
+        <div class="home-hero-content">
+          <p class="eyebrow">Free Browser Table Games</p>
+          <h1 id="home-title">Neon Table Games</h1>
+          <p>Play fast, polished table games in your browser. No signup, no download, just a clean neon table and the next hand.</p>
         </div>
-        <div class="top-status">
-          <div class="stats">
-            <div>
-              <span>Bankroll</span>
-              <strong id="bankroll">$1,000</strong>
-            </div>
-            <div>
-              <span>Bet</span>
-              <strong id="bet">$0</strong>
-            </div>
-            <div>
-              <span>Cards</span>
-              <strong id="shoe">52</strong>
-            </div>
-            <div class="best-run">
-              <span>Best Run</span>
-              <strong id="high-bankroll">$1,000</strong>
-            </div>
+        <div class="home-table-preview" aria-label="Blackjack table preview">
+          <div class="preview-card preview-card-red">
+            <span>A</span>
+            <strong>&hearts;</strong>
           </div>
+          <div class="preview-card">
+            <span>K</span>
+            <strong>&spades;</strong>
+          </div>
+          <div class="preview-chip">$25</div>
         </div>
       </section>
 
-      <section class="felt" aria-live="polite">
-        <div class="dealer-zone hand-zone">
-          <div class="zone-header">
-            <h2>Dealer</h2>
-            <span id="dealer-total" class="total">0</span>
-          </div>
-          <div id="dealer-hand" class="hand"></div>
+      <section class="home-section" aria-labelledby="games-title">
+        <div>
+          <p class="eyebrow">Games</p>
+          <h2 id="games-title">Choose a Table</h2>
+          <p>Start with free online blackjack. More table games can join this page over time without changing the site structure.</p>
         </div>
-
-        <div class="message-row">
-          <div class="table-rules" aria-label="Table rules">
-            <span>Blackjack pays 3 to 2</span>
-            <span>Dealer hits soft 17</span>
-          </div>
-          <div id="table-bet-stack" class="table-bet-stack" aria-label="Wager on table"></div>
-          <p id="message">Place your bet to start a hand.</p>
-        </div>
-
-        <div class="player-zone hand-zone">
-          <div class="zone-header">
-            <h2 id="player-heading">Player</h2>
-            <span id="player-total" class="total">0</span>
-          </div>
-          <div id="player-hand" class="player-hands"></div>
+        <div class="game-list">
+          <article class="game-link">
+            <span>Blackjack</span>
+            <strong>Play free online blackjack</strong>
+            <small>Split pairs, double down, and practice classic 3 to 2 blackjack.</small>
+            <div class="game-actions">
+              <a href="blackjack/index.html">Play</a>
+              <a href="blackjack-rules/index.html">Rules</a>
+            </div>
+          </article>
         </div>
       </section>
 
-      <section class="controls" aria-label="Game controls">
-        <div class="chips" aria-label="Bet chips">
-          <button class="chip" data-chip="5" data-tooltip="Add $5 to your bet"><span class="chip-dollar">$</span>5</button>
-          <button class="chip" data-chip="25" data-tooltip="Add $25 to your bet"><span class="chip-dollar">$</span>25</button>
-          <button class="chip" data-chip="100" data-tooltip="Add $100 to your bet"><span class="chip-dollar">$</span>100</button>
-          <button class="chip" data-chip="500" data-tooltip="Add $500 to your bet"><span class="chip-dollar">$</span>500</button>
+      <section class="home-section home-copy" aria-labelledby="about-title">
+        <div>
+          <p class="eyebrow">About</p>
+          <h2 id="about-title">Free Online Table Games, Built for Quick Play</h2>
         </div>
-        <div class="actions">
-          <button id="clear-bet" class="secondary" data-tooltip="Return your current bet to your bankroll">Clear</button>
-          <button id="deal" class="primary" data-tooltip="Start a hand with your current bet">Deal</button>
-          <button id="split" data-tooltip="Split a matching pair into two hands">Split</button>
-          <button id="stand" data-tooltip="End your turn and let the dealer play">Stand</button>
-          <button id="double" data-tooltip="Double your bet, take one card, then stand">Double</button>
-          <button id="hit" data-tooltip="Take one more card">Hit</button>
-          <button id="next-hand" class="secondary" data-tooltip="Clear the table and keep your current bankroll">Next Hand</button>
-        </div>
+        <p>Neon Table Games is a small collection of browser-first table games designed for quick sessions, clear controls, and clean layouts on desktop, tablet, and mobile.</p>
+        <p>The blackjack table uses familiar casino actions like hit, stand, split, and double down. It is built for practice and entertainment, not real-money gambling.</p>
       </section>
     </main>
-
-    <script src="script.js"></script>
   </body>
 </html>
