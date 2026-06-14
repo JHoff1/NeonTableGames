@@ -701,7 +701,6 @@ function renderChipStack(target, options = {}) {
   const visibleLimit = options.visibleLimit || 12;
   const chips = options.chips || state.betChips;
   const visibleChips = chips.slice(-visibleLimit);
-  const hiddenCount = chips.length - visibleChips.length;
   target.classList.toggle("has-chips", visibleChips.length > 0);
 
   visibleChips.forEach((amount, index) => {
@@ -712,13 +711,6 @@ function renderChipStack(target, options = {}) {
     chip.style.setProperty("--stack-index", String(index));
     target.append(chip);
   });
-
-  if (hiddenCount > 0) {
-    const extra = document.createElement("span");
-    extra.className = "stack-extra";
-    extra.textContent = `+${hiddenCount}`;
-    target.append(extra);
-  }
 }
 
 function chipAmountsForBet(amount) {
