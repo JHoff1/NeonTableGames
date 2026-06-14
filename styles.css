@@ -158,7 +158,7 @@ button:disabled {
 
 .title-block .top-reset {
   grid-column: 2;
-  grid-row: 1 / span 2;
+  grid-row: 1 / span 3;
   align-self: stretch;
 }
 
@@ -189,6 +189,16 @@ h1 {
 .title-home-link {
   color: inherit;
   text-decoration: none;
+}
+
+.game-disclaimer {
+  grid-column: 1;
+  max-width: 520px;
+  margin-top: 6px;
+  color: rgba(247, 241, 223, 0.68);
+  font-size: clamp(0.72rem, 1.1vw, 0.86rem);
+  font-weight: 750;
+  line-height: 1.35;
 }
 
 h2 {
@@ -1582,8 +1592,9 @@ h2 {
     grid-template-columns: minmax(0, 1fr) auto auto;
     grid-template-areas:
       "eyebrow stats reset"
-      "title stats reset";
-    align-items: stretch;
+      "title stats reset"
+      "disclaimer stats reset";
+    align-items: start;
   }
 
   .title-block {
@@ -1599,13 +1610,57 @@ h2 {
     grid-area: title;
   }
 
+  .game-disclaimer {
+    grid-area: disclaimer;
+  }
+
   .top-status {
     grid-area: stats;
+    align-self: start;
   }
 
   .title-block .top-reset {
     grid-area: reset;
+    align-self: start;
     min-width: 132px;
+  }
+}
+
+@media (min-width: 781px) and (max-width: 1100px) {
+  .game-top {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 12px;
+  }
+
+  .stats {
+    grid-template-columns: repeat(4, minmax(78px, 1fr));
+    gap: 8px;
+  }
+
+  .stats div {
+    min-height: 72px;
+    padding: 8px 10px;
+  }
+
+  .stats span {
+    margin-bottom: 2px;
+    font-size: 0.68rem;
+  }
+
+  .stats strong {
+    font-size: 1.08rem;
+  }
+
+  .title-block .top-reset {
+    min-width: 112px;
+    min-height: 72px;
+    padding: 0 14px;
+    font-size: 0.9rem;
+  }
+
+  .game-disclaimer {
+    max-width: 600px;
+    font-size: 0.72rem;
   }
 }
 
@@ -1826,6 +1881,49 @@ h2 {
   display: none !important;
 }
 
+.tutorial-overlay {
+  position: absolute;
+  left: clamp(14px, 2.4vw, 28px);
+  top: clamp(14px, 2.4vw, 28px);
+  z-index: 8;
+  width: min(420px, calc(100% - 28px));
+  border: 1px solid rgba(86, 243, 255, 0.36);
+  border-left: 4px solid var(--neon-cyan);
+  border-radius: 8px;
+  padding: clamp(12px, 1.8vw, 18px);
+  color: var(--ink);
+  background: rgba(9, 15, 12, 0.9);
+  box-shadow:
+    0 18px 34px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  pointer-events: none;
+}
+
+.tutorial-overlay[hidden] {
+  display: none;
+}
+
+.tutorial-overlay span,
+.tutorial-overlay strong {
+  display: block;
+  color: var(--neon-cyan);
+  font-size: 0.74rem;
+  font-weight: 950;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.tutorial-overlay p {
+  margin: 8px 0;
+  color: rgba(247, 241, 223, 0.94);
+  font-size: clamp(0.86rem, 1.6vw, 1rem);
+  line-height: 1.45;
+}
+
+.tutorial-overlay strong {
+  color: var(--gold);
+}
+
 #message {
   width: min(100%, 760px) !important;
   min-height: 42px !important;
@@ -1979,6 +2077,109 @@ h2 {
   }
 }
 
+/* Tutorial mode gets its own grid row so guidance never covers the cards. */
+.felt.tutorial-active {
+  --table-card-width: clamp(62px, 6.4vw, 86px) !important;
+  --player-card-width: clamp(58px, 5.8vw, 80px) !important;
+  grid-template-areas:
+    "tutorial"
+    "dealer"
+    "center"
+    "player" !important;
+  grid-template-rows: auto minmax(136px, 0.68fr) auto minmax(198px, 0.92fr) !important;
+  gap: clamp(8px, 1.2vh, 12px) !important;
+}
+
+.felt.tutorial-active .tutorial-overlay {
+  grid-area: tutorial !important;
+  position: static !important;
+  justify-self: start !important;
+  align-self: start !important;
+  width: min(560px, calc(100% - 28px)) !important;
+  margin: clamp(14px, 2.4vw, 28px) 0 0 clamp(14px, 2.4vw, 28px) !important;
+  padding: clamp(10px, 1.2vw, 13px) !important;
+}
+
+.felt.tutorial-active .tutorial-overlay p {
+  margin: 6px 0;
+  font-size: clamp(0.8rem, 1.08vw, 0.88rem);
+  line-height: 1.3;
+}
+
+.felt.tutorial-active .tutorial-overlay span,
+.felt.tutorial-active .tutorial-overlay strong {
+  font-size: 0.68rem;
+}
+
+.felt.tutorial-active .dealer-zone {
+  padding-top: 0 !important;
+}
+
+.felt.tutorial-active .dealer-zone .card,
+.felt.tutorial-active .dealer-zone .card.back {
+  height: calc(var(--table-card-width) * 1.4) !important;
+}
+
+.felt.tutorial-active .card {
+  padding: clamp(5px, 0.7vw, 7px) !important;
+}
+
+.felt.tutorial-active .rank {
+  font-size: clamp(0.78rem, 1.35vw, 0.98rem) !important;
+  line-height: 1 !important;
+}
+
+.felt.tutorial-active .suit {
+  font-size: clamp(1.12rem, 2.1vw, 1.48rem) !important;
+  line-height: 1 !important;
+}
+
+.felt.tutorial-active #message {
+  display: none !important;
+}
+
+.felt.tutorial-active .player-hand-panel,
+.felt.tutorial-active .player-zone.has-split-hands .player-hand-panel {
+  grid-template-rows: 24px 28px auto 26px !important;
+  gap: 5px !important;
+  padding: 9px !important;
+  overflow: visible !important;
+}
+
+.felt.tutorial-active .hand-meta,
+.felt.tutorial-active .player-zone.has-split-hands .hand-meta {
+  min-height: 24px !important;
+}
+
+.felt.tutorial-active .hand-chip-rail,
+.felt.tutorial-active .player-zone.has-split-hands .hand-chip-rail {
+  min-height: 26px !important;
+}
+
+.felt.tutorial-active .player-hand-panel .card,
+.felt.tutorial-active .player-zone.has-split-hands .player-hand-panel .card {
+  height: calc(var(--player-card-width) * 1.4) !important;
+}
+
+.felt.tutorial-active .hand-chip-rail .stack-chip {
+  width: 26px !important;
+  height: 26px !important;
+  font-size: 0.42rem !important;
+}
+
+@media (max-width: 560px) {
+  .felt.tutorial-active {
+    --table-card-width: clamp(48px, 12.5vw, 60px) !important;
+    --player-card-width: clamp(46px, 12vw, 56px) !important;
+    grid-template-rows: auto minmax(104px, auto) auto minmax(178px, auto) !important;
+  }
+
+  .felt.tutorial-active .tutorial-overlay {
+    width: calc(100% - 24px) !important;
+    margin: 12px 0 0 12px !important;
+  }
+}
+
 .home-shell {
   width: min(1180px, calc(100% - 28px));
   margin: 0 auto;
@@ -2019,6 +2220,12 @@ h2 {
   text-decoration: none;
 }
 
+.home-nav span {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
 .home-nav a:first-child {
   color: var(--neon-cyan);
   text-shadow: 0 0 14px rgba(86, 243, 255, 0.45);
@@ -2035,6 +2242,13 @@ h2 {
   color: rgba(247, 241, 223, 0.84);
   font-size: clamp(1rem, 2vw, 1.28rem);
   line-height: 1.55;
+}
+
+.play-money-note {
+  max-width: 680px !important;
+  color: rgba(240, 189, 90, 0.92) !important;
+  font-size: clamp(0.88rem, 1.4vw, 1.02rem) !important;
+  font-weight: 850;
 }
 
 .home-primary-link {
@@ -2091,8 +2305,8 @@ h2 {
 }
 
 .preview-chip {
-  width: clamp(30px, 3.8vw, 40px);
-  height: clamp(30px, 3.8vw, 40px);
+  width: clamp(40px, 4.7vw, 54px);
+  height: clamp(40px, 4.7vw, 54px);
   border-width: 3px;
   border: 4px dashed rgba(39, 84, 79, 0.72);
   border-radius: 50%;
@@ -2103,7 +2317,10 @@ h2 {
     radial-gradient(circle, #b7f5ba 0 50%, #7ac7bb 51% 56%, #b7f5ba 57% 66%, transparent 67%),
     conic-gradient(from 0deg, #f0fff0 0 10deg, #b7f5ba 10deg 35deg, #f0fff0 35deg 45deg, #b7f5ba 45deg 80deg, #f0fff0 80deg 90deg, #b7f5ba 90deg);
   box-shadow: 0 8px 18px var(--shadow);
+  font-size: clamp(0.66rem, 1vw, 0.86rem);
   font-weight: 950;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .home-section,
@@ -2265,6 +2482,15 @@ h2 {
   max-width: 780px;
   color: rgba(247, 241, 223, 0.8);
   line-height: 1.65;
+}
+
+.rules-article a {
+  color: var(--neon-cyan);
+}
+
+.legal-article section {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 18px;
 }
 
 .rules-article .guide-grid {

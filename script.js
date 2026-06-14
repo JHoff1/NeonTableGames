@@ -35,6 +35,16 @@ const state = {
   phase: "betting",
   revealDealer: false,
   message: "Place your bet to start a hand.",
+  tutorial: {
+    active: false,
+    handIndex: 0,
+    allowedAction: null,
+    instruction: "",
+    deck: [],
+    intro: false,
+    pendingAfterHit: false,
+    awaitingNextHand: false,
+  },
 };
 
 const els = {
@@ -60,8 +70,52 @@ const els = {
   newGame: document.querySelector("#new-game"),
   nextHand: document.querySelector("#next-hand"),
   chips: [...document.querySelectorAll("[data-chip]")],
+  tutorialOverlay: null,
   tooltip: null,
 };
+
+// Tutorial scenarios are deterministic mini-hands. Cards are ordered as:
+// player card 1, dealer upcard, player card 2, dealer hole card, then hit cards.
+const tutorialHands = [
+  {
+    instruction: "You have 13. The dealer shows a weak 5. Basic strategy says: Stand here and let the dealer take the risk of busting.",
+    allowedAction: "stand",
+    deck: [
+      card("10", "hearts"),
+      card("5", "clubs"),
+      card("3", "spades"),
+      card("10", "diamonds"),
+      card("J", "clubs"),
+    ],
+  },
+  {
+    instruction: "You have an Ace and a 2. This is a 'Soft 13' because the Ace can count as 1 or 11. You cannot bust by hitting. Let's take a card.",
+    allowedAction: "hit",
+    deck: [
+      card("A", "spades"),
+      card("6", "clubs"),
+      card("2", "hearts"),
+      card("10", "diamonds"),
+      card("8", "clubs"),
+      card("2", "spades"),
+    ],
+    afterHitInstruction: "Perfect! If your first two cards had totaled a hard 11 instead of a soft 13, you would have seen a 'Double Down' option. This lets you double your bet in exchange for exactly ONE more card--the ultimate offensive move when the dealer shows a weak card like a 6.",
+  },
+  {
+    instruction: "A pair of 8s totals 16--notoriously the worst starting hand in Blackjack. Standing usually loses, and hitting will likely bust you. Because you have a pair, your secret weapon is 'Splitting'. This separates them into two hands, turning a bad situation into two offensive positions.",
+    allowedAction: "split",
+    deck: [
+      card("8", "hearts"),
+      card("7", "clubs"),
+      card("8", "spades"),
+      card("10", "diamonds"),
+      card("10", "clubs"),
+      card("9", "hearts"),
+    ],
+    afterSplitInstruction: "Great split. Hand 1 is now 18, a strong total against the dealer's 7. Stand and move to Hand 2.",
+    secondHandInstruction: "Hand 2 is 17. It is not flashy, but it is much better than playing one hard 16. Stand and let the dealer resolve the hand.",
+  },
+];
 
 function money(value) {
   return new Intl.NumberFormat("en-US", {
@@ -71,11 +125,17 @@ function money(value) {
   }).format(value);
 }
 
+function card(label, suitName) {
+  const rank = ranks.find((item) => item.label === label);
+  const suit = suits.find((item) => item.name === suitName);
+  return { ...rank, suit: suit.symbol, suitName: suit.name, color: suit.color };
+}
+
 function buildDeck() {
   const deck = [];
   for (const suit of suits) {
     for (const rank of ranks) {
-      deck.push({ ...rank, suit: suit.symbol, suitName: suit.name, color: suit.color });
+      deck.push(card(rank.label, suit.name));
     }
   }
   return shuffle(deck);
@@ -91,22 +151,42 @@ function shuffle(cards) {
 }
 
 function drawCard() {
+  // Tutorial mode intercepts the normal shoe and draws from a scripted stack.
+  if (state.tutorial.active && state.tutorial.deck.length > 0) {
+    return state.tutorial.deck.shift();
+  }
+
   if (state.deck.length < 12) {
     state.deck = buildDeck();
   }
   return state.deck.pop();
 }
 
-function handValue(cards) {
+function handScore(cards) {
   let total = cards.reduce((sum, card) => sum + card.value, 0);
   let aces = cards.filter((card) => card.label === "A").length;
+  let acesAdjusted = 0;
 
   while (total > 21 && aces > 0) {
     total -= 10;
     aces -= 1;
+    acesAdjusted += 1;
   }
 
-  return total;
+  return {
+    total,
+    isSoft: cards.some((card) => card.label === "A") && aces > 0,
+    acesAdjusted,
+  };
+}
+
+function handValue(cards) {
+  return handScore(cards).total;
+}
+
+function handLabel(cards) {
+  const score = handScore(cards);
+  return score.isSoft ? `Soft ${score.total}` : String(score.total);
 }
 
 function readHighBankroll() {
@@ -137,15 +217,7 @@ function updateHighBankroll() {
 }
 
 function isSoftTotal(cards) {
-  let total = cards.reduce((sum, card) => sum + card.value, 0);
-  let aces = cards.filter((card) => card.label === "A").length;
-
-  while (total > 21 && aces > 0) {
-    total -= 10;
-    aces -= 1;
-  }
-
-  return aces > 0;
+  return handScore(cards).isSoft;
 }
 
 function dealerShouldHit() {
@@ -166,6 +238,7 @@ function tableBet() {
 }
 
 function addBet(amount) {
+  if (!tutorialCanUse("chip")) return;
   if (state.phase !== "betting" || amount > state.bankroll) return;
   state.bankroll -= amount;
   state.bet += amount;
@@ -175,6 +248,7 @@ function addBet(amount) {
 }
 
 function clearBet() {
+  if (!tutorialCanUse("clear")) return;
   if (state.phase !== "betting") return;
   state.bankroll += state.bet;
   state.bet = 0;
@@ -184,10 +258,16 @@ function clearBet() {
 }
 
 function deal() {
+  if (!tutorialCanUse("deal")) return;
   if (state.phase !== "betting" || state.bet <= 0) return;
 
+  const playerFirst = drawCard();
+  const dealerUpcard = drawCard();
+  const playerSecond = drawCard();
+  const dealerHoleCard = drawCard();
+
   state.hands = [{
-    cards: [drawCard(), drawCard()],
+    cards: [playerFirst, playerSecond],
     bet: state.bet,
     status: "playing",
     result: "",
@@ -195,7 +275,7 @@ function deal() {
   }];
   state.bet = 0;
   state.activeHand = 0;
-  state.dealer = [drawCard(), drawCard()];
+  state.dealer = [dealerUpcard, dealerHoleCard];
   state.phase = "playing";
   state.revealDealer = false;
 
@@ -205,10 +285,12 @@ function deal() {
   }
 
   state.message = handPrompt();
+  tutorialAfterDeal();
   render();
 }
 
 function hit() {
+  if (!tutorialCanUse("hit")) return;
   const hand = activeHand();
   if (state.phase !== "playing" || !hand) return;
 
@@ -222,19 +304,23 @@ function hit() {
   }
 
   state.message = handPrompt();
+  tutorialAfterHit();
   render();
 }
 
 function stand() {
+  if (!tutorialCanUse("stand")) return;
   const hand = activeHand();
   if (state.phase !== "playing" || !hand) return;
 
   hand.status = "stood";
   hand.result = "Stood";
+  tutorialBeforeAdvanceFromStand();
   advanceHand();
 }
 
 function doubleDown() {
+  if (!tutorialCanUse("double")) return;
   const hand = activeHand();
   if (state.phase !== "playing" || !canDoubleHand(hand)) return;
 
@@ -248,6 +334,7 @@ function doubleDown() {
 }
 
 function splitHand() {
+  if (!tutorialCanUse("split")) return;
   const hand = activeHand();
   if (state.phase !== "playing" || !canSplitHand(hand)) return;
 
@@ -260,6 +347,7 @@ function splitHand() {
   ];
   state.activeHand = 0;
   state.message = "Split into two hands. Play Hand 1 first.";
+  tutorialAfterSplit();
   render();
 }
 
@@ -277,6 +365,130 @@ function canSplitHand(hand) {
     && hand.cards.length === 2
     && hand.cards[0].value === hand.cards[1].value
     && state.bankroll >= hand.bet;
+}
+
+function tutorialCanUse(action) {
+  return !state.tutorial.active || state.tutorial.allowedAction === action;
+}
+
+function currentTutorialHand() {
+  return tutorialHands[state.tutorial.handIndex];
+}
+
+function setTutorialGate(instruction, allowedAction) {
+  state.tutorial.instruction = instruction;
+  state.tutorial.allowedAction = allowedAction;
+}
+
+function startTutorial() {
+  state.tutorial.active = true;
+  state.tutorial.handIndex = 0;
+  state.tutorial.awaitingNextHand = false;
+  state.tutorial.intro = true;
+  prepareTutorialHand();
+  state.message = "Click Deal to start the tutorial.";
+  setTutorialGate(
+    "Welcome to Blackjack! Your goal is to get closer to 21 than the dealer without going over (busting). Click Deal to begin the first guided hand.",
+    "deal"
+  );
+  render();
+}
+
+// The tutorial controller owns stacked decks, instruction copy, and input gates.
+// Normal gameplay still uses the same action functions and render path.
+function prepareTutorialHand() {
+  const scenario = currentTutorialHand();
+  state.bankroll = 1000;
+  state.bet = 25;
+  state.betChips = [25];
+  state.hands = [];
+  state.dealer = [];
+  state.activeHand = 0;
+  state.phase = "betting";
+  state.revealDealer = false;
+  state.tutorial.deck = scenario.deck.map((item) => ({ ...item }));
+  state.tutorial.pendingAfterHit = false;
+  state.tutorial.awaitingNextHand = false;
+}
+
+function setupTutorialHand() {
+  const scenario = currentTutorialHand();
+  if (!scenario) {
+    setTutorialGate("Tutorial complete. You can start a normal blackjack game whenever you're ready.", "new-game");
+    state.tutorial.active = false;
+    render();
+    return;
+  }
+
+  state.tutorial.intro = false;
+  prepareTutorialHand();
+  state.message = "Tutorial hand loading.";
+  setTutorialGate("", "deal");
+  deal();
+}
+
+function tutorialAfterDeal() {
+  if (!state.tutorial.active) return;
+  const scenario = currentTutorialHand();
+  state.tutorial.intro = false;
+  setTutorialGate(scenario.instruction, scenario.allowedAction);
+  state.message = handPrompt();
+}
+
+function tutorialAfterHit() {
+  if (!state.tutorial.active) return;
+  const scenario = currentTutorialHand();
+  if (!scenario.afterHitInstruction) return;
+  setTutorialGate(scenario.afterHitInstruction, "stand");
+  state.message = `Player: ${handLabel(activeHand().cards)}. Click Stand to finish the hand.`;
+}
+
+function tutorialAfterSplit() {
+  if (!state.tutorial.active) return;
+  const scenario = currentTutorialHand();
+  if (!scenario.afterSplitInstruction) return;
+  setTutorialGate(scenario.afterSplitInstruction, "stand");
+}
+
+function tutorialBeforeAdvanceFromStand() {
+  if (!state.tutorial.active) return;
+  const scenario = currentTutorialHand();
+  if (!scenario.secondHandInstruction) return;
+
+  const nextIndex = state.hands.findIndex((hand, index) => index > state.activeHand && hand.status === "waiting");
+  if (nextIndex >= 0) {
+    setTutorialGate(scenario.secondHandInstruction, "stand");
+  }
+}
+
+function tutorialAfterSettle() {
+  if (!state.tutorial.active) return;
+  const isLastHand = state.tutorial.handIndex >= tutorialHands.length - 1;
+  const instruction = isLastHand
+    ? "Tutorial complete. You saw standing against a weak dealer card, soft hand flexibility, and splitting 8s into two better hands. Click New Game when you're ready for normal play."
+    : "Nice. Click Next Hand to continue the tutorial.";
+  setTutorialGate(instruction, isLastHand ? "new-game" : "next");
+  state.tutorial.awaitingNextHand = !isLastHand;
+}
+
+function tutorialNextHand() {
+  if (!state.tutorial.active || !state.tutorial.awaitingNextHand) return false;
+  state.tutorial.handIndex += 1;
+  setupTutorialHand();
+  return true;
+}
+
+function stopTutorial() {
+  state.tutorial.active = false;
+  state.tutorial.allowedAction = null;
+  state.tutorial.instruction = "";
+  state.tutorial.deck = [];
+  state.tutorial.intro = false;
+  state.tutorial.awaitingNextHand = false;
+
+  if (new URLSearchParams(window.location.search).get("tutorial") === "1") {
+    window.history.replaceState(null, "", `${window.location.pathname}${window.location.hash}`);
+  }
 }
 
 function advanceHand() {
@@ -349,6 +561,7 @@ function settleRound() {
     state.message = "You're out of chips. Start a new game to reset your bankroll.";
   }
 
+  tutorialAfterSettle();
   render();
 }
 
@@ -366,10 +579,14 @@ function handPrompt() {
 
   const handName = state.hands.length > 1 ? `Hand ${state.activeHand + 1}` : "Your hand";
   const options = canSplitHand(hand) ? "hit, stand, double, or split" : "hit, stand, or double";
-  return `${handName}: ${handValue(hand.cards)}. Choose ${options}.`;
+  return `${handName}: ${handLabel(hand.cards)}. Choose ${options}.`;
 }
 
 function resetRound() {
+  if (state.tutorial.active) {
+    if (tutorialCanUse("next")) tutorialNextHand();
+    return;
+  }
   if (state.phase === "playing") return;
   state.hands = [];
   state.dealer = [];
@@ -384,6 +601,8 @@ function resetRound() {
 }
 
 function newGame() {
+  if (state.tutorial.active && !tutorialCanUse("new-game")) return;
+  stopTutorial();
   state.bankroll = 1000;
   state.bet = 0;
   state.betChips = [];
@@ -440,7 +659,7 @@ function renderPlayerHands() {
     meta.className = "hand-meta";
     meta.innerHTML = `
       <span>${state.hands.length > 1 ? `Hand ${index + 1}` : "Player"}</span>
-      <strong>${handValue(hand.cards)}</strong>
+      <strong>${handLabel(hand.cards)}</strong>
     `;
 
     const cards = document.createElement("div");
@@ -523,8 +742,9 @@ function renderBetStack() {
 }
 
 function render() {
+  hideTooltip();
   const hiddenDealer = state.dealer.length > 1 && !state.revealDealer;
-  const visibleDealerTotal = hiddenDealer ? state.dealer[0].value : handValue(state.dealer);
+  const visibleDealerTotal = hiddenDealer ? String(state.dealer[0].value) : handLabel(state.dealer);
   const hand = activeHand();
   const inBetting = state.phase === "betting";
   const inPlaying = state.phase === "playing";
@@ -534,7 +754,7 @@ function render() {
   els.bet.textContent = money(tableBet());
   els.shoe.textContent = String(state.deck.length);
   els.dealerTotal.textContent = String(visibleDealerTotal || 0);
-  els.playerTotal.textContent = String(hand ? handValue(hand.cards) : 0);
+  els.playerTotal.textContent = String(hand ? handLabel(hand.cards) : 0);
   els.felt.classList.toggle("has-split-hands", state.hands.length > 1);
   els.playerZone.classList.toggle("has-split-hands", state.hands.length > 1);
   els.playerHeading.textContent = "Player";
@@ -546,15 +766,53 @@ function render() {
 
   els.chips.forEach((button) => {
     const amount = Number(button.dataset.chip);
-    button.disabled = !inBetting || amount > state.bankroll;
+    button.disabled = !inBetting || amount > state.bankroll || !tutorialCanUse("chip");
   });
-  els.clearBet.disabled = !inBetting || state.bet === 0;
-  els.deal.disabled = !inBetting || state.bet === 0;
-  els.hit.disabled = !inPlaying;
-  els.stand.disabled = !inPlaying;
-  els.double.disabled = !inPlaying || !canDoubleHand(hand);
-  els.split.disabled = !inPlaying || !canSplitHand(hand);
-  els.nextHand.disabled = state.phase !== "settled" || state.bankroll <= 0;
+  els.clearBet.disabled = !inBetting || state.bet === 0 || !tutorialCanUse("clear");
+  els.deal.disabled = !inBetting || state.bet === 0 || !tutorialCanUse("deal");
+  els.hit.disabled = !inPlaying || !tutorialCanUse("hit");
+  els.stand.disabled = !inPlaying || !tutorialCanUse("stand");
+  els.double.disabled = !inPlaying || !canDoubleHand(hand) || !tutorialCanUse("double");
+  els.split.disabled = !inPlaying || !canSplitHand(hand) || !tutorialCanUse("split");
+  els.newGame.disabled = state.tutorial.active && !tutorialCanUse("new-game");
+  els.nextHand.disabled = state.tutorial.active
+    ? !tutorialCanUse("next")
+    : state.phase !== "settled" || state.bankroll <= 0;
+  renderTutorialOverlay();
+}
+
+function renderTutorialOverlay() {
+  if (!els.tutorialOverlay) {
+    els.tutorialOverlay = document.createElement("aside");
+    els.tutorialOverlay.className = "tutorial-overlay";
+    els.tutorialOverlay.setAttribute("aria-live", "polite");
+    els.felt.append(els.tutorialOverlay);
+  }
+
+  els.felt.classList.toggle("tutorial-active", state.tutorial.active);
+  document.body.classList.toggle("tutorial-active", state.tutorial.active);
+
+  if (!state.tutorial.active || !state.tutorial.instruction) {
+    els.tutorialOverlay.hidden = true;
+    els.tutorialOverlay.replaceChildren();
+    return;
+  }
+
+  const actionLabels = {
+    hit: "Hit",
+    stand: "Stand",
+    split: "Split",
+    next: "Next Hand",
+    "new-game": "New Game",
+  };
+  const allowedLabel = actionLabels[state.tutorial.allowedAction] || "";
+
+  els.tutorialOverlay.hidden = false;
+  els.tutorialOverlay.innerHTML = `
+    <span>${state.tutorial.intro ? "Tutorial Intro" : `Tutorial Hand ${Math.min(state.tutorial.handIndex + 1, tutorialHands.length)} of ${tutorialHands.length}`}</span>
+    <p>${state.tutorial.instruction}</p>
+    ${allowedLabel ? `<strong>Next action: ${allowedLabel}</strong>` : ""}
+  `;
 }
 
 function showTooltip(button) {
@@ -618,4 +876,8 @@ document.querySelectorAll("[data-tooltip]").forEach((button) => {
 window.addEventListener("resize", hideTooltip);
 window.addEventListener("scroll", hideTooltip, { passive: true });
 
-newGame();
+if (new URLSearchParams(window.location.search).get("tutorial") === "1") {
+  startTutorial();
+} else {
+  newGame();
+}

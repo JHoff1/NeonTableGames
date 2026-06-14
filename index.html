@@ -21,6 +21,14 @@
     <meta name="twitter:description" content="Play free browser table games with no signup.">
     <meta name="twitter:image" content="https://neontablegames.com/favicon.svg">
     <link rel="stylesheet" href="styles.css">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XKETCHHVRE"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XKETCHHVRE');
+    </script>
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -42,11 +50,16 @@
       <section class="home-hero" aria-labelledby="home-title">
         <nav class="home-nav" aria-label="Primary navigation">
           <a href="/" aria-current="page">Neon Table Games</a>
+          <span>
+            <a href="privacy-policy/index.html">Privacy</a>
+            <a href="terms/index.html">Terms</a>
+          </span>
         </nav>
         <div class="home-hero-content">
           <p class="eyebrow">Free Browser Table Games</p>
           <h1 id="home-title">Neon Table Games</h1>
           <p>Play fast, polished table games in your browser. No signup, no download, just a clean neon table and the next hand.</p>
+          <p class="play-money-note">Free play-money games only. No real-money wagering, deposits, prizes, or cash-out.</p>
         </div>
         <div class="home-table-preview" aria-label="Blackjack table preview">
           <div class="preview-card preview-card-red">
@@ -74,6 +87,7 @@
             <small>Split pairs, double down, and practice classic 3 to 2 blackjack.</small>
             <div class="game-actions">
               <a href="blackjack/index.html">Play</a>
+              <a href="blackjack/index.html?tutorial=1">Tutorial</a>
               <a href="blackjack-rules/index.html">Rules</a>
             </div>
           </article>
