@@ -4,7 +4,7 @@
   "description": "Free browser table games from Neon Table Games.",
   "start_url": "/",
   "scope": "/",
-  "display": "standalone",
+  "display": "browser",
   "background_color": "#071913",
   "theme_color": "#0e5f49",
   "icons": [
