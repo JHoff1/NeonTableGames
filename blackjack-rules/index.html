@@ -129,6 +129,151 @@
           <a class="home-primary-link" href="../blackjack/index.html">Play Blackjack</a>
         </section>
 
+        <section class="strategy-chart-section" aria-labelledby="strategy-chart-title">
+          <p class="eyebrow">Strategy Chart</p>
+          <h2 id="strategy-chart-title">Basic Strategy for This Blackjack Table</h2>
+          <p>This chart matches the rules used in Neon Table Games blackjack: one 52-card deck, blackjack pays 3 to 2, dealer hits soft 17, double after split is allowed, one split is allowed, and surrender is not available. Basic strategy is a statistical recommendation for the next decision, not a guarantee for any single hand.</p>
+          <div class="strategy-definitions">
+            <article>
+              <h3>Hard Totals</h3>
+              <p>A hard total has no ace counted as 11. For example, 10-6 is hard 16. Hard hands can bust immediately when you hit.</p>
+            </article>
+            <article>
+              <h3>Soft Totals</h3>
+              <p>A soft total has an ace currently counted as 11. For example, ace-6 is soft 17 because the ace can become 1 if another card would otherwise bust the hand.</p>
+            </article>
+          </div>
+          <div class="chart-help">
+            <h3>How to Read the Chart</h3>
+            <ol>
+              <li>Find your hand type: hard total, soft total, or pair.</li>
+              <li>Find your hand total or pair in the left column.</li>
+              <li>Find the dealer's visible card across the top row.</li>
+              <li>Use the letter where that row and column meet.</li>
+            </ol>
+          </div>
+          <div class="strategy-legend" aria-label="Strategy chart legend">
+            <span>H = Hit</span>
+            <span>S = Stand</span>
+            <span>D = Double if available, otherwise hit</span>
+            <span>P = Split</span>
+          </div>
+
+          <div class="strategy-chart">
+            <h3>Hard Totals</h3>
+            <div class="strategy-table-wrap">
+              <table class="strategy-table">
+                <caption>Hard total recommendations by dealer upcard</caption>
+                <thead>
+                  <tr>
+                    <th scope="col" aria-label="Player hard total"></th>
+                    <th scope="colgroup" colspan="10">Dealer visible card</th>
+                  </tr>
+                  <tr>
+                    <th scope="col">Your hard total</th>
+                    <th scope="col">2</th>
+                    <th scope="col">3</th>
+                    <th scope="col">4</th>
+                    <th scope="col">5</th>
+                    <th scope="col">6</th>
+                    <th scope="col">7</th>
+                    <th scope="col">8</th>
+                    <th scope="col">9</th>
+                    <th scope="col">10</th>
+                    <th scope="col">A</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><th scope="row">17+</th><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td></tr>
+                  <tr><th scope="row">13-16</th><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
+                  <tr><th scope="row">12</th><td>H</td><td>H</td><td>S</td><td>S</td><td>S</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
+                  <tr><th scope="row">11</th><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td></tr>
+                  <tr><th scope="row">10</th><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>H</td><td>H</td></tr>
+                  <tr><th scope="row">9</th><td>H</td><td>D</td><td>D</td><td>D</td><td>D</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
+                  <tr><th scope="row">8 or less</th><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="strategy-chart">
+            <h3>Soft Totals</h3>
+            <div class="strategy-table-wrap">
+              <table class="strategy-table">
+                <caption>Soft total recommendations by dealer upcard</caption>
+                <thead>
+                  <tr>
+                    <th scope="col" aria-label="Player soft hand"></th>
+                    <th scope="colgroup" colspan="10">Dealer visible card</th>
+                  </tr>
+                  <tr>
+                    <th scope="col">Your soft hand</th>
+                    <th scope="col">2</th>
+                    <th scope="col">3</th>
+                    <th scope="col">4</th>
+                    <th scope="col">5</th>
+                    <th scope="col">6</th>
+                    <th scope="col">7</th>
+                    <th scope="col">8</th>
+                    <th scope="col">9</th>
+                    <th scope="col">10</th>
+                    <th scope="col">A</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><th scope="row">A,9</th><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td></tr>
+                  <tr><th scope="row">A,8</th><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td></tr>
+                  <tr><th scope="row">A,7</th><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>S</td><td>S</td><td>H</td><td>H</td><td>H</td></tr>
+                  <tr><th scope="row">A,6</th><td>H</td><td>D</td><td>D</td><td>D</td><td>D</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
+                  <tr><th scope="row">A,4 or A,5</th><td>H</td><td>H</td><td>D</td><td>D</td><td>D</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
+                  <tr><th scope="row">A,2 or A,3</th><td>H</td><td>H</td><td>H</td><td>D</td><td>D</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="strategy-chart">
+            <h3>Pairs</h3>
+            <div class="strategy-table-wrap">
+              <table class="strategy-table">
+                <caption>Pair recommendations by dealer upcard</caption>
+                <thead>
+                  <tr>
+                    <th scope="col" aria-label="Player pair"></th>
+                    <th scope="colgroup" colspan="10">Dealer visible card</th>
+                  </tr>
+                  <tr>
+                    <th scope="col">Your pair</th>
+                    <th scope="col">2</th>
+                    <th scope="col">3</th>
+                    <th scope="col">4</th>
+                    <th scope="col">5</th>
+                    <th scope="col">6</th>
+                    <th scope="col">7</th>
+                    <th scope="col">8</th>
+                    <th scope="col">9</th>
+                    <th scope="col">10</th>
+                    <th scope="col">A</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><th scope="row">A,A</th><td>P</td><td>P</td><td>P</td><td>P</td><td>P</td><td>P</td><td>P</td><td>P</td><td>P</td><td>P</td></tr>
+                  <tr><th scope="row">10,10</th><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td><td>S</td></tr>
+                  <tr><th scope="row">9,9</th><td>P</td><td>P</td><td>P</td><td>P</td><td>P</td><td>S</td><td>P</td><td>P</td><td>S</td><td>S</td></tr>
+                  <tr><th scope="row">8,8</th><td>P</td><td>P</td><td>P</td><td>P</td><td>P</td><td>P</td><td>P</td><td>P</td><td>P</td><td>P</td></tr>
+                  <tr><th scope="row">7,7</th><td>P</td><td>P</td><td>P</td><td>P</td><td>P</td><td>P</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
+                  <tr><th scope="row">6,6</th><td>P</td><td>P</td><td>P</td><td>P</td><td>P</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
+                  <tr><th scope="row">5,5</th><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>D</td><td>H</td><td>H</td></tr>
+                  <tr><th scope="row">4,4</th><td>H</td><td>H</td><td>H</td><td>P</td><td>P</td><td>H</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
+                  <tr><th scope="row">3,3 or 2,2</th><td>P</td><td>P</td><td>P</td><td>P</td><td>P</td><td>P</td><td>H</td><td>H</td><td>H</td><td>H</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <p class="source-note">Strategy charts vary when rules change. This table is adapted for the current Neon Table Games rules and should be used for free play-money practice only.</p>
+        </section>
+
         <section>
           <h2>Blackjack Glossary</h2>
           <div class="guide-grid glossary-grid">
