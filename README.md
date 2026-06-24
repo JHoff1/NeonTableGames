@@ -26,6 +26,10 @@ Upload these files to a static host such as GitHub Pages, Netlify, Vercel, Cloud
 
 The game includes betting chips, dealer/player hands, blackjack payouts, hit, stand, double down, split pairs, push handling, and automatic deck refresh.
 
+## QA
+
+Use `docs/visual-regression-checklist.md` for mobile and desktop visual checks before deploying layout changes.
+
 ## Credits
 
 The favicon uses the Bootstrap Icons `suit-spade-fill` path, licensed under MIT.

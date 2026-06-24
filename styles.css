@@ -3688,3 +3688,79 @@ h2 {
     font-size: 0.42rem !important;
   }
 }
+/* Mobile overlap safety: on narrow phones, let the table grow instead of squeezing dealer,
+   rules, result message, and player hand into the same fixed-height viewport. */
+@media (max-width: 560px) {
+  .table-shell {
+    height: auto !important;
+    min-height: 100dvh !important;
+    grid-template-rows: auto auto auto !important;
+    overflow: visible !important;
+  }
+
+  .felt {
+    min-height: auto !important;
+    height: auto !important;
+    grid-template-rows: auto auto auto !important;
+    align-items: start !important;
+    gap: 16px !important;
+    overflow: hidden !important;
+  }
+
+  .dealer-zone {
+    align-content: start !important;
+    gap: 10px !important;
+    padding-top: 16px !important;
+    overflow: visible !important;
+  }
+
+  .dealer-zone .hand {
+    min-height: calc(var(--table-card-width) * 1.4) !important;
+    align-items: flex-start !important;
+  }
+
+  .message-row {
+    align-content: start !important;
+    gap: 10px !important;
+    margin: 2px 0 !important;
+  }
+
+  .table-rules {
+    position: relative !important;
+    z-index: 2 !important;
+    width: min(100%, 640px) !important;
+    margin-top: 0 !important;
+    background: rgba(7, 25, 19, 0.68) !important;
+  }
+
+  #message {
+    position: relative !important;
+    z-index: 2 !important;
+    margin: 0 !important;
+  }
+
+  .player-zone,
+  .player-zone.has-split-hands {
+    align-content: start !important;
+    padding-bottom: 14px !important;
+    overflow: visible !important;
+  }
+
+  .player-hands,
+  .player-zone.has-split-hands .player-hands {
+    margin-top: 0 !important;
+    align-content: start !important;
+  }
+
+  .player-hand-panel,
+  .player-zone.has-split-hands .player-hand-panel {
+    grid-template-rows: auto auto auto auto !important;
+    overflow: hidden !important;
+  }
+
+  .player-hand-panel .hand,
+  .player-zone.has-split-hands .player-hand-panel .hand {
+    min-height: calc(var(--player-card-width) * 1.4) !important;
+    align-items: flex-start !important;
+  }
+}
