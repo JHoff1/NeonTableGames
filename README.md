@@ -28,7 +28,24 @@ The game includes betting chips, dealer/player hands, blackjack payouts, hit, st
 
 ## QA
 
-Use `docs/visual-regression-checklist.md` for mobile and desktop visual checks before deploying layout changes.
+Install the test dependencies and Chromium once:
+
+```powershell
+npm install
+npx playwright install chromium
+```
+
+Run the automated layout checks:
+
+```powershell
+npm run test:visual
+```
+
+The Playwright suite checks the empty table, a dealt hand, all seven deterministic tutorial hands, the split layout, the final tutorial result, and the strategy tables across phone, tablet, and desktop viewports. Failure-only screenshots and traces are written to `test-results/`.
+
+The same suite runs automatically in GitHub Actions for pull requests and pushes to `master`.
+
+Use `docs/visual-regression-checklist.md` for the remaining Samsung Internet, Chrome Android, and Safari iOS device spot checks before deploying major layout changes.
 
 ## Credits
 

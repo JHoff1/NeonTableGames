@@ -1,6 +1,6 @@
 # Visual Regression Checklist
 
-Run this checklist before deploying layout or CSS changes.
+Run `npm run test:visual` before deploying layout or CSS changes. The automated suite covers Chromium geometry and overflow checks at representative viewport sizes. Use this checklist for browser and real-device behavior that desktop emulation cannot fully reproduce.
 
 ## Viewports
 
@@ -12,31 +12,13 @@ Run this checklist before deploying layout or CSS changes.
 - 1366 x 768: laptop
 - 1440 x 900: desktop
 
-## Blackjack Table States
+## Manual Checks
 
-- Empty table before betting.
-- Bet placed, before deal.
-- Initial two-card hand with dealer hole card hidden.
-- Player hit to three or more cards.
-- Dealer draws to three or more cards.
-- Round settled with win message.
-- Round settled with push message.
-- Split hand with two player panels.
-- Tutorial hand after a result message.
-- Tutorial final hand completion message.
-
-## Things To Check
-
-- Dealer cards do not overlap the table rules.
-- Result or tutorial message does not overlap player cards.
-- Player hand panel stays fully inside the felt area.
-- Controls are reachable and do not cover the table.
 - Disabled controls look disabled but remain readable.
-- Chip grid stays balanced at narrow widths.
-- Strategy tables scroll horizontally on mobile.
-- No horizontal page scroll appears on phone widths.
-- Text does not clip inside buttons, stat boxes, or cards.
-- Page can scroll vertically on small phones when content needs more height.
+- Chip grid looks balanced at narrow widths.
+- Tooltips remain readable near every viewport edge.
+- Cards, chips, text, and focus states remain visually clear.
+- Page scrolling feels natural on small phones.
 
 ## Browser Spot Checks
 

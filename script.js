@@ -22,9 +22,10 @@ const ranks = [
 
 const highBankrollKey = "neontablegamesHighBankroll";
 const legacyHighBankrollKey = "blackjackHighBankroll";
+const bankrollKey = "neontablegamesBankroll";
 
 const state = {
-  bankroll: 1000,
+  bankroll: readBankroll(),
   highBankroll: readHighBankroll(),
   bet: 0,
   betChips: [],
@@ -254,6 +255,30 @@ function readHighBankroll() {
     );
   } catch {
     return 1000;
+  }
+}
+
+function readBankroll() {
+  try {
+    const storedBankroll = localStorage.getItem(bankrollKey);
+    if (storedBankroll === null) return 1000;
+
+    const savedBankroll = Number(storedBankroll);
+    return Number.isFinite(savedBankroll) && savedBankroll >= 0
+      ? savedBankroll
+      : 1000;
+  } catch {
+    return 1000;
+  }
+}
+
+function saveBankroll() {
+  if (state.tutorial.active) return;
+
+  try {
+    localStorage.setItem(bankrollKey, String(state.bankroll));
+  } catch {
+    // Local storage can be unavailable in some browser privacy modes.
   }
 }
 
@@ -614,6 +639,7 @@ function settleRound() {
 
   state.bankroll += totalPayout;
   updateHighBankroll();
+  saveBankroll();
   state.message = roundSummary(totalPayout);
 
   if (state.bankroll <= 0) {
@@ -659,10 +685,13 @@ function resetRound() {
   render();
 }
 
-function newGame() {
+function newGame(resetBankroll = true) {
   if (state.tutorial.active && !tutorialCanUse("new-game")) return;
   stopTutorial();
-  state.bankroll = 1000;
+  if (resetBankroll) {
+    state.bankroll = 1000;
+    saveBankroll();
+  }
   state.bet = 0;
   state.betChips = [];
   state.deck = buildDeck();
@@ -910,7 +939,7 @@ els.hit.addEventListener("click", hit);
 els.stand.addEventListener("click", stand);
 els.double.addEventListener("click", doubleDown);
 els.split.addEventListener("click", splitHand);
-els.newGame.addEventListener("click", newGame);
+els.newGame.addEventListener("click", () => newGame());
 els.nextHand.addEventListener("click", resetRound);
 
 const supportsHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
@@ -930,5 +959,5 @@ window.addEventListener("scroll", hideTooltip, { passive: true });
 if (new URLSearchParams(window.location.search).get("tutorial") === "1") {
   startTutorial();
 } else {
-  newGame();
+  newGame(false);
 }

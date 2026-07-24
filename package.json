@@ -1,0 +1,14 @@
+{
+  "name": "neon-table-games",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "npm run test:visual",
+    "test:visual": "playwright test",
+    "test:visual:headed": "playwright test --headed",
+    "test:visual:report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1"
+  }
+}
