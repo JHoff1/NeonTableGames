@@ -22,10 +22,12 @@ async function expectHealthyGameLayout(page, stateName) {
       if (!element) return false;
       const style = getComputedStyle(element);
       const rect = element.getBoundingClientRect();
-      return style.display !== "none"
-        && style.visibility !== "hidden"
-        && rect.width > 0
-        && rect.height > 0;
+      return (
+        style.display !== "none" &&
+        style.visibility !== "hidden" &&
+        rect.width > 0 &&
+        rect.height > 0
+      );
     };
     const rect = (element) => {
       const bounds = element.getBoundingClientRect();
@@ -60,7 +62,7 @@ async function expectHealthyGameLayout(page, stateName) {
 
     if (document.documentElement.scrollWidth > window.innerWidth + tolerance) {
       issues.push(
-        `document is ${document.documentElement.scrollWidth - window.innerWidth}px wider than the viewport`
+        `document is ${document.documentElement.scrollWidth - window.innerWidth}px wider than the viewport`,
       );
     }
 
@@ -77,10 +79,10 @@ async function expectHealthyGameLayout(page, stateName) {
       elements(".player-hand-panel, .dealer-zone .card").forEach((element, index) => {
         const elementRect = rect(element);
         if (
-          elementRect.left < feltRect.left - tolerance
-          || elementRect.right > feltRect.right + tolerance
-          || elementRect.top < feltRect.top - tolerance
-          || elementRect.bottom > feltRect.bottom + tolerance
+          elementRect.left < feltRect.left - tolerance ||
+          elementRect.right > feltRect.right + tolerance ||
+          elementRect.top < feltRect.top - tolerance ||
+          elementRect.bottom > feltRect.bottom + tolerance
         ) {
           issues.push(`table element ${index + 1} escapes the felt`);
         }
@@ -109,7 +111,10 @@ async function expectHealthyGameLayout(page, stateName) {
     };
   });
 
-  expect(report.issues, `${stateName} at ${report.viewport.width}x${report.viewport.height}`).toEqual([]);
+  expect(
+    report.issues,
+    `${stateName} at ${report.viewport.width}x${report.viewport.height}`,
+  ).toEqual([]);
 }
 
 async function clickEnabled(page, selector) {
@@ -147,7 +152,7 @@ test("all deterministic tutorial hands avoid overlap", async ({ page }) => {
       await clickEnabled(page, action);
       await expectHealthyGameLayout(
         page,
-        `tutorial hand ${handIndex + 1} after ${action.slice(1)}`
+        `tutorial hand ${handIndex + 1} after ${action.slice(1)}`,
       );
     }
 
@@ -167,9 +172,9 @@ test("strategy tables scroll inside their wrappers on narrow screens", async ({ 
   const report = await page.evaluate(() => ({
     documentOverflow: document.documentElement.scrollWidth - window.innerWidth,
     tableCount: document.querySelectorAll(".strategy-table-wrap").length,
-    overflowingWrappers: [...document.querySelectorAll(".strategy-table-wrap")]
-      .filter((wrapper) => wrapper.scrollWidth > wrapper.clientWidth + 2)
-      .length,
+    overflowingWrappers: [...document.querySelectorAll(".strategy-table-wrap")].filter(
+      (wrapper) => wrapper.scrollWidth > wrapper.clientWidth + 2,
+    ).length,
     viewportWidth: window.innerWidth,
   }));
 

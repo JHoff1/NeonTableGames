@@ -27,8 +27,8 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Run layout tests
-        run: npm run test:visual
+      - name: Run quality, unit, layout, and accessibility tests
+        run: npm test
 
       - name: Upload failure report
         if: failure()

@@ -21,6 +21,7 @@
     <meta name="twitter:description" content="Play free online blackjack in your browser with no signup.">
     <meta name="twitter:image" content="https://neontablegames.com/favicon.svg">
     <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../blackjack.css">
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-XKETCHHVRE"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -57,8 +58,12 @@
   </head>
   <body>
     <main class="table-shell">
-      <section class="game-top" aria-label="Game status">
+      <header class="game-top" aria-label="Game status">
         <div class="title-block">
+          <nav class="game-switcher" aria-label="Game navigation">
+            <a href="../index.html">All Games</a>
+            <a href="../blackjack-rules/index.html">Blackjack Rules</a>
+          </nav>
           <p class="eyebrow">Blackjack</p>
           <h1><a class="title-home-link" href="../index.html">Neon Table Games</a></h1>
           <p class="game-disclaimer">Free play-money blackjack. No real-money wagering, deposits, prizes, or cash-out.</p>
@@ -84,7 +89,7 @@
             </div>
           </div>
         </div>
-      </section>
+      </header>
 
       <section class="felt" aria-live="polite">
         <div class="dealer-zone hand-zone">
@@ -132,6 +137,8 @@
       </section>
     </main>
 
+    <script src="../shared/game-core.js"></script>
+    <script src="../shared/blackjack-engine.js"></script>
     <script src="../script.js"></script>
   </body>
 </html>

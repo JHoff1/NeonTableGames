@@ -1,6 +1,6 @@
 # Neon Table Games
 
-A static table games site from Neon Table Games. The homepage introduces the site and links to the blackjack game at `/blackjack/`.
+A static table games site from Neon Table Games with Blackjack and Mini Baccarat.
 
 ## Run Locally
 
@@ -13,6 +13,15 @@ Upload these files to a static host such as GitHub Pages, Netlify, Vercel, Cloud
 - `index.html`
 - `blackjack/index.html`
 - `blackjack-rules/index.html`
+- `baccarat/index.html`
+- `baccarat-rules/index.html`
+- `shared/game-core.js`
+- `shared/blackjack-engine.js`
+- `shared/baccarat-engine.js`
+- `blackjack.css`
+- `baccarat.js`
+- `baccarat.css`
+- `rules.css`
 - `styles.css`
 - `script.js`
 - `favicon.svg`
@@ -24,7 +33,9 @@ Upload these files to a static host such as GitHub Pages, Netlify, Vercel, Cloud
 
 ## Gameplay
 
-The game includes betting chips, dealer/player hands, blackjack payouts, hit, stand, double down, split pairs, push handling, and automatic deck refresh.
+Blackjack includes betting chips, dealer/player hands, 3 to 2 payouts, hit, stand, double down, split pairs, push handling, and automatic deck refresh. Its scoring, action eligibility, dealer rules, and settlement logic live in the independently tested `shared/blackjack-engine.js`.
+
+Mini Baccarat includes Player, Banker, and Tie bets, standard third-card rules, 5% Banker commission, an eight-deck shoe, interactive card reveals, result history, and a guided tutorial.
 
 ## QA
 
@@ -35,13 +46,13 @@ npm install
 npx playwright install chromium
 ```
 
-Run the automated layout checks:
+Run linting, formatting checks, unit tests, responsive layout tests, and accessibility checks:
 
 ```powershell
-npm run test:visual
+npm test
 ```
 
-The Playwright suite checks the empty table, a dealt hand, all seven deterministic tutorial hands, the split layout, the final tutorial result, and the strategy tables across phone, tablet, and desktop viewports. Failure-only screenshots and traces are written to `test-results/`.
+The automated suite validates shared versioned storage, Blackjack and Baccarat rules, empty and settled game tables, deterministic tutorials, keyboard card reveals, accessibility, result history, and rules tables across phone, tablet, and desktop viewports. Failure-only screenshots and traces are written to `test-results/`.
 
 The same suite runs automatically in GitHub Actions for pull requests and pushes to `master`.
 

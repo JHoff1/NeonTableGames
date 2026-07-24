@@ -1,0 +1,745 @@
+/* Keep wager chips inside the reserved rail instead of drifting into cards/footer. */
+.hand-chip-rail {
+  position: relative !important;
+}
+
+.hand-chip-rail .stack-chip {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: translate(-50%, -50%) translateY(calc(var(--stack-index) * -3px)) !important;
+}
+
+.hand-chip-rail .stack-extra {
+  position: absolute !important;
+  left: calc(50% + 12px) !important;
+  right: auto !important;
+  top: 2px !important;
+}
+
+/* Stable table layout: every major table element owns a row, so nothing floats over hands. */
+.felt {
+  --table-card-width: clamp(74px, 9.2vw, 116px);
+  --player-card-width: clamp(74px, 7.8vw, 108px);
+  display: grid;
+  grid-template-areas:
+    "dealer"
+    "center"
+    "player";
+  grid-template-rows: minmax(210px, 0.86fr) auto minmax(260px, 0.92fr);
+  align-items: stretch;
+  gap: clamp(18px, 2.4vh, 30px);
+  padding: clamp(18px, 2.5vh, 28px) clamp(18px, 3vw, 34px);
+}
+
+.dealer-zone,
+.message-row,
+.player-zone {
+  position: relative;
+  z-index: 1;
+}
+
+.dealer-zone {
+  grid-area: dealer;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  justify-items: center;
+  align-content: start;
+  gap: clamp(12px, 1.8vh, 18px);
+  padding-top: clamp(18px, 2.4vh, 30px);
+}
+
+.dealer-zone .zone-header {
+  width: min(100%, 390px);
+}
+
+.dealer-zone .hand {
+  width: max-content;
+  max-width: 100%;
+  min-height: 0;
+  align-items: start;
+  justify-content: center;
+  flex-wrap: nowrap;
+}
+
+.dealer-zone .card,
+.dealer-zone .card.back {
+  width: var(--table-card-width);
+  height: auto;
+}
+
+.message-row {
+  grid-area: center;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto auto;
+  align-content: center;
+  justify-items: center;
+  gap: clamp(14px, 1.8vh, 20px);
+  padding: 0;
+}
+
+.table-bet-stack {
+  display: none;
+}
+
+#message {
+  width: min(100%, 760px);
+  min-height: 44px;
+  padding: 10px clamp(14px, 2.4vw, 24px);
+  position: static;
+  z-index: 1;
+}
+
+.player-zone,
+.player-zone.has-split-hands {
+  grid-area: player;
+  display: grid;
+  align-content: end;
+  justify-items: center;
+  gap: 0;
+  min-height: 0;
+  padding: 0 0 clamp(18px, 2.8vh, 34px);
+  overflow: visible;
+  transform: none;
+}
+
+.player-zone .zone-header {
+  display: none;
+}
+
+.player-hands,
+.player-zone.has-split-hands .player-hands {
+  width: min(100%, 680px);
+  max-width: 100%;
+  margin: 0;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: clamp(10px, 1.6vw, 18px);
+  padding: 0;
+}
+
+.player-hand-panel,
+.player-zone.has-split-hands .player-hand-panel {
+  width: fit-content;
+  min-width: min(100%, 260px);
+  max-width: 100%;
+  display: grid;
+  grid-template-rows: 30px 38px auto 28px;
+  gap: clamp(6px, 0.8vh, 10px);
+  padding: clamp(10px, 1.4vh, 14px);
+  overflow: hidden;
+}
+
+.hand-meta,
+.player-zone.has-split-hands .hand-meta {
+  min-height: 30px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 10px;
+}
+
+.hand-meta span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: clip;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.hand-chip-rail,
+.player-zone.has-split-hands .hand-chip-rail {
+  min-height: 38px;
+  display: grid;
+  place-items: center;
+}
+
+.hand-wager-stack {
+  display: none;
+}
+
+.hand-chip-rail .stack-chip {
+  width: 36px;
+  height: 36px;
+  border-width: 2px;
+  bottom: calc(var(--stack-index) * 4px);
+  font-size: 0.54rem;
+}
+
+.hand-chip-rail .stack-extra {
+  right: -6px;
+  top: -4px;
+  min-width: 22px;
+  padding: 2px 5px;
+  font-size: 0.58rem;
+}
+
+.player-hand-panel .hand,
+.player-zone.has-split-hands .player-hand-panel .hand {
+  width: max-content;
+  max-width: 100%;
+  min-height: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: start;
+  justify-content: center;
+  gap: clamp(8px, 1vw, 14px);
+  overflow: visible;
+}
+
+.player-hand-panel .card,
+.player-zone.has-split-hands .player-hand-panel .card {
+  width: var(--player-card-width);
+  height: auto;
+}
+
+.hand-footer {
+  min-height: 28px;
+}
+
+@media (max-width: 900px) {
+  .felt {
+    --table-card-width: clamp(58px, 13vw, 88px);
+    --player-card-width: clamp(58px, 12vw, 82px);
+    grid-template-rows: minmax(150px, 0.78fr) auto minmax(205px, 0.9fr);
+    gap: clamp(12px, 1.8vh, 22px);
+  }
+
+  .dealer-zone {
+    padding-top: clamp(8px, 1.4vh, 18px);
+    gap: 8px;
+  }
+
+  .table-rules {
+    width: min(100%, 640px);
+  }
+
+  .player-hands,
+  .player-zone.has-split-hands .player-hands {
+    width: min(100%, 560px);
+  }
+}
+
+@media (max-width: 560px) {
+  .felt {
+    --table-card-width: clamp(50px, 13vw, 68px);
+    --player-card-width: clamp(48px, 13vw, 62px);
+    grid-template-rows: minmax(135px, auto) auto minmax(190px, auto);
+    gap: 12px;
+    padding: 14px 10px;
+  }
+
+  .message-row {
+    gap: 10px;
+  }
+
+  #message {
+    min-height: 40px;
+    padding: 8px 10px;
+    font-size: clamp(0.68rem, 3.2vw, 0.86rem);
+    line-height: 1.2;
+  }
+
+  .player-hands,
+  .player-zone.has-split-hands .player-hands {
+    width: 100%;
+    gap: 8px;
+  }
+
+  .player-hand-panel,
+  .player-zone.has-split-hands .player-hand-panel {
+    min-width: 0;
+    flex: 1 1 0;
+    grid-template-rows: 24px 30px auto 24px;
+    gap: 5px;
+    padding: 8px;
+  }
+
+  .hand-meta,
+  .player-zone.has-split-hands .hand-meta {
+    min-height: 24px;
+    column-gap: 6px;
+  }
+
+  .hand-meta span,
+  .hand-footer span,
+  .hand-footer strong {
+    font-size: 0.66rem;
+  }
+
+  .hand-meta strong {
+    min-width: 34px;
+    padding: 4px 7px;
+    font-size: 0.78rem;
+  }
+
+  .hand-chip-rail,
+  .player-zone.has-split-hands .hand-chip-rail {
+    min-height: 30px;
+  }
+
+  .hand-chip-rail .stack-chip {
+    width: 28px;
+    height: 28px;
+    font-size: 0.46rem;
+  }
+
+  .player-hand-panel .hand,
+  .player-zone.has-split-hands .player-hand-panel .hand {
+    gap: 6px;
+  }
+
+  .card {
+    border-radius: 7px;
+  }
+
+  .player-zone,
+  .player-zone.has-split-hands {
+    padding-bottom: 8px;
+  }
+}
+
+@media (max-width: 780px) {
+  .dealer-zone .zone-header,
+  .player-zone .zone-header {
+    width: min(100%, 300px);
+  }
+
+  .player-hand-panel {
+    max-width: min(100%, 300px);
+    padding: 10px;
+  }
+
+  .player-zone.has-split-hands .player-hand-panel {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+
+  .player-zone.has-split-hands .hand-meta {
+    column-gap: 6px;
+  }
+
+  .player-zone.has-split-hands .hand-wager-stack {
+    height: 24px;
+  }
+
+  .hand-wager-stack .stack-chip {
+    width: 28px;
+    height: 28px;
+    font-size: 0.48rem;
+  }
+}
+
+@media (min-width: 781px) {
+  .player-zone.has-split-hands {
+    transform: translateY(14px);
+  }
+}
+
+/* Final hand layout pass: remove redundant center/outer labels and reserve rows inside panels. */
+.table-bet-stack:not(.has-chips),
+.felt.has-split-hands .table-bet-stack {
+  display: none;
+}
+
+.player-zone .zone-header {
+  display: none;
+}
+
+.player-zone {
+  gap: clamp(8px, 1.2vh, 14px);
+}
+
+.player-hands {
+  margin-top: clamp(22px, 3vh, 44px);
+}
+
+.player-zone.has-split-hands {
+  padding-top: 0;
+  transform: none;
+}
+
+.player-hand-panel,
+.player-zone.has-split-hands .player-hand-panel {
+  display: grid;
+  grid-template-rows: auto auto auto;
+  gap: clamp(6px, 1vh, 9px);
+  padding: clamp(8px, 1.4vh, 12px);
+}
+
+.player-zone.has-split-hands .player-hand-panel {
+  grid-template-rows: auto auto auto auto;
+}
+
+.hand-meta,
+.player-zone.has-split-hands .hand-meta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 8px;
+  min-height: 28px;
+}
+
+.hand-meta span {
+  overflow: hidden;
+  text-overflow: clip;
+  white-space: nowrap;
+}
+
+.player-zone.has-split-hands .hand-wager-stack {
+  height: clamp(22px, 3vh, 28px);
+  margin: -2px auto -1px;
+}
+
+.player-zone.has-split-hands .hand-footer span {
+  display: none;
+}
+
+/* True final layout authority: keep table regions in normal flow. */
+.felt {
+  --table-card-width: clamp(64px, 7.4vw, 98px) !important;
+  --player-card-width: clamp(62px, 6.4vw, 88px) !important;
+  display: grid !important;
+  grid-template-areas:
+    "dealer"
+    "center"
+    "player" !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: minmax(190px, 0.82fr) auto minmax(250px, 0.95fr) !important;
+  gap: clamp(16px, 2.2vh, 28px) !important;
+  align-items: stretch !important;
+}
+
+.dealer-zone {
+  grid-area: dealer !important;
+  display: grid !important;
+  grid-template-rows: auto auto !important;
+  justify-items: center !important;
+  justify-content: center !important;
+  align-content: start !important;
+  padding-top: clamp(10px, 1.8vh, 22px) !important;
+}
+
+.dealer-zone .hand {
+  width: auto !important;
+  max-width: 100% !important;
+  min-height: 0 !important;
+  flex-wrap: nowrap !important;
+  justify-content: center !important;
+}
+
+.dealer-zone .card,
+.dealer-zone .card.back {
+  width: var(--table-card-width) !important;
+  height: auto !important;
+}
+
+.message-row {
+  grid-area: center !important;
+  min-height: 0 !important;
+  display: grid !important;
+  grid-template-rows: auto auto !important;
+  align-content: center !important;
+  justify-items: center !important;
+  gap: clamp(12px, 1.6vh, 18px) !important;
+  padding: 0 !important;
+}
+
+.table-bet-stack {
+  display: none !important;
+}
+
+#message {
+  width: min(100%, 760px) !important;
+  min-height: 42px !important;
+  position: static !important;
+}
+
+.player-zone,
+.player-zone.has-split-hands {
+  grid-area: player !important;
+  display: grid !important;
+  align-content: end !important;
+  justify-content: center !important;
+  justify-items: center !important;
+  gap: 0 !important;
+  padding: 0 0 clamp(12px, 2vh, 26px) !important;
+  overflow: visible !important;
+  transform: none !important;
+}
+
+.player-zone .zone-header {
+  display: none !important;
+}
+
+.player-hands,
+.player-zone.has-split-hands .player-hands {
+  width: min(100%, 700px) !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, max-content) !important;
+  align-items: stretch !important;
+  align-content: end !important;
+  justify-content: center !important;
+  gap: clamp(10px, 1.4vw, 16px) !important;
+}
+
+.player-zone.has-split-hands .player-hands {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.player-hand-panel,
+.player-zone.has-split-hands .player-hand-panel {
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  display: grid !important;
+  grid-template-rows: 28px 32px auto 26px !important;
+  gap: clamp(5px, 0.7vh, 8px) !important;
+  padding: clamp(8px, 1.2vh, 12px) !important;
+  overflow: hidden !important;
+}
+
+.hand-meta,
+.player-zone.has-split-hands .hand-meta {
+  min-height: 28px !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  column-gap: 8px !important;
+  line-height: 1 !important;
+}
+
+.hand-meta span {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: clip !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+}
+
+.hand-chip-rail,
+.player-zone.has-split-hands .hand-chip-rail {
+  min-height: 32px !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+.hand-chip-rail .stack-chip {
+  width: 30px !important;
+  height: 30px !important;
+  border-width: 2px !important;
+  bottom: calc(var(--stack-index) * 3px) !important;
+  font-size: 0.48rem !important;
+}
+
+.hand-chip-rail .stack-extra {
+  right: -5px !important;
+  top: -4px !important;
+}
+
+.player-hand-panel .hand,
+.player-zone.has-split-hands .player-hand-panel .hand {
+  width: auto !important;
+  max-width: 100% !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: start !important;
+  justify-content: center !important;
+  gap: clamp(7px, 0.9vw, 12px) !important;
+  overflow: visible !important;
+}
+
+.player-hand-panel .card,
+.player-zone.has-split-hands .player-hand-panel .card {
+  width: var(--player-card-width) !important;
+  height: auto !important;
+}
+
+.hand-footer {
+  min-height: 26px !important;
+  line-height: 1 !important;
+}
+
+@media (max-width: 560px) {
+  .felt {
+    --table-card-width: clamp(50px, 13vw, 66px) !important;
+    --player-card-width: clamp(46px, 12vw, 58px) !important;
+    grid-template-rows: minmax(130px, auto) auto minmax(188px, auto) !important;
+    gap: 12px !important;
+  }
+
+  .player-hands,
+  .player-zone.has-split-hands .player-hands {
+    width: 100% !important;
+    gap: 8px !important;
+  }
+
+  .player-hand-panel,
+  .player-zone.has-split-hands .player-hand-panel {
+    grid-template-rows: 24px 28px auto 24px !important;
+    gap: 5px !important;
+    padding: 8px !important;
+  }
+
+  .hand-meta,
+  .player-zone.has-split-hands .hand-meta {
+    min-height: 24px !important;
+  }
+
+  .hand-chip-rail,
+  .player-zone.has-split-hands .hand-chip-rail {
+    min-height: 28px !important;
+  }
+
+  .hand-chip-rail .stack-chip {
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 0.42rem !important;
+  }
+}
+/* Mobile overlap safety: on narrow phones, let the table grow instead of squeezing dealer,
+   rules, result message, and player hand into the same fixed-height viewport. */
+@media (max-width: 560px) {
+  .table-shell {
+    height: auto !important;
+    min-height: 100dvh !important;
+    grid-template-rows: auto auto auto !important;
+    align-content: start !important;
+    overflow: visible !important;
+  }
+
+  .felt {
+    min-height: auto !important;
+    height: auto !important;
+    grid-template-rows: auto auto auto !important;
+    align-items: start !important;
+    gap: 16px !important;
+    overflow: hidden !important;
+  }
+
+  .dealer-zone {
+    align-content: start !important;
+    gap: 10px !important;
+    padding-top: 16px !important;
+    overflow: visible !important;
+  }
+
+  .dealer-zone .hand {
+    min-height: calc(var(--table-card-width) * 1.4) !important;
+    align-items: flex-start !important;
+  }
+
+  .message-row {
+    align-content: start !important;
+    gap: 10px !important;
+    margin: 2px 0 !important;
+  }
+
+  .table-rules {
+    position: relative !important;
+    z-index: 2 !important;
+    width: min(100%, 640px) !important;
+    margin-top: 0 !important;
+    background: rgba(7, 25, 19, 0.68) !important;
+  }
+
+  #message {
+    position: relative !important;
+    z-index: 2 !important;
+    margin: 0 !important;
+  }
+
+  .player-zone,
+  .player-zone.has-split-hands {
+    align-content: start !important;
+    padding-bottom: 14px !important;
+    overflow: visible !important;
+  }
+
+  .player-hands,
+  .player-zone.has-split-hands .player-hands {
+    margin-top: 0 !important;
+    align-content: start !important;
+  }
+
+  .player-hand-panel,
+  .player-zone.has-split-hands .player-hand-panel {
+    grid-template-rows: auto auto auto auto !important;
+    overflow: hidden !important;
+  }
+
+  .player-hand-panel .hand,
+  .player-zone.has-split-hands .player-hand-panel .hand {
+    min-height: calc(var(--player-card-width) * 1.4) !important;
+    align-items: flex-start !important;
+  }
+}
+
+/* Short desktop windows use content-height rows so cards cannot spill into adjacent regions. */
+@media (max-height: 780px) and (min-width: 781px) {
+  .table-shell {
+    height: auto;
+    min-height: 100dvh;
+    grid-template-rows: auto auto auto;
+    align-content: start;
+    overflow: visible;
+  }
+
+  .felt {
+    height: auto;
+    grid-template-rows: auto auto auto !important;
+    overflow: hidden;
+  }
+
+  .felt.tutorial-active {
+    grid-template-rows: auto auto auto auto !important;
+  }
+
+  .dealer-zone .hand {
+    min-height: calc(var(--table-card-width) * 1.4) !important;
+  }
+
+  .player-zone,
+  .player-zone.has-split-hands {
+    align-content: start !important;
+  }
+}
+
+/* Tablet-width tables also grow with their contents when navigation or results need more room. */
+@media (min-width: 561px) and (max-width: 780px) {
+  .table-shell {
+    height: auto;
+    min-height: 100dvh;
+    grid-template-rows: auto auto auto;
+    align-content: start;
+    overflow: visible;
+  }
+
+  .felt {
+    height: auto;
+    min-height: auto;
+    grid-template-rows: auto auto auto !important;
+    overflow: hidden;
+  }
+
+  .felt.tutorial-active {
+    grid-template-rows: auto auto auto auto !important;
+  }
+
+  .dealer-zone .hand {
+    min-height: calc(var(--table-card-width) * 1.4) !important;
+  }
+
+  .player-zone,
+  .player-zone.has-split-hands {
+    align-content: start !important;
+  }
+}

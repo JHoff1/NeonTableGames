@@ -1,39 +1,54 @@
-const suits = [
-  { name: "spades", symbol: "&spades;", color: "black" },
-  { name: "hearts", symbol: "&hearts;", color: "red" },
-  { name: "diamonds", symbol: "&diams;", color: "red" },
-  { name: "clubs", symbol: "&clubs;", color: "black" },
-];
-const ranks = [
-  { label: "A", value: 11 },
-  { label: "2", value: 2 },
-  { label: "3", value: 3 },
-  { label: "4", value: 4 },
-  { label: "5", value: 5 },
-  { label: "6", value: 6 },
-  { label: "7", value: 7 },
-  { label: "8", value: 8 },
-  { label: "9", value: 9 },
-  { label: "10", value: 10 },
-  { label: "J", value: 10 },
-  { label: "Q", value: 10 },
-  { label: "K", value: 10 },
-];
+const gameCore = window.NeonTableCore;
+const blackjackEngine = window.NeonBlackjackEngine;
+const GAME_PHASES = gameCore.phases;
 
 const highBankrollKey = "neontablegamesHighBankroll";
 const legacyHighBankrollKey = "blackjackHighBankroll";
 const bankrollKey = "neontablegamesBankroll";
+const startingBankroll = 1000;
+
+const blackjackStorage = gameCore.createGameStorage("neontablegames.blackjack", {
+  defaults: {
+    bankroll: startingBankroll,
+    highBankroll: startingBankroll,
+  },
+  migrate(storage) {
+    const legacyHighBankroll = gameCore.readStoredNumber(legacyHighBankrollKey, startingBankroll, {
+      storage,
+    });
+    return {
+      bankroll: gameCore.readStoredNumber(bankrollKey, startingBankroll, { storage }),
+      highBankroll: Math.max(
+        startingBankroll,
+        gameCore.readStoredNumber(highBankrollKey, legacyHighBankroll, { storage }),
+      ),
+    };
+  },
+  sanitize(value) {
+    const bankroll = Number(value.bankroll);
+    const highBankroll = Number(value.highBankroll);
+    return {
+      bankroll: Number.isFinite(bankroll) && bankroll >= 0 ? bankroll : startingBankroll,
+      highBankroll:
+        Number.isFinite(highBankroll) && highBankroll >= startingBankroll
+          ? highBankroll
+          : startingBankroll,
+    };
+  },
+});
+
+const savedBlackjack = blackjackStorage.read();
 
 const state = {
-  bankroll: readBankroll(),
-  highBankroll: readHighBankroll(),
+  bankroll: savedBlackjack.bankroll,
+  highBankroll: savedBlackjack.highBankroll,
   bet: 0,
   betChips: [],
   deck: [],
   hands: [],
   activeHand: 0,
   dealer: [],
-  phase: "betting",
+  phase: GAME_PHASES.BETTING,
   revealDealer: false,
   message: "Place your bet to start a hand.",
   tutorial: {
@@ -79,7 +94,8 @@ const els = {
 // player card 1, dealer upcard, player card 2, dealer hole card, then hit cards.
 const tutorialHands = [
   {
-    instruction: "You have 13. The dealer shows a weak 5. Basic strategy says: Stand here and let the dealer take the risk of busting.",
+    instruction:
+      "You have 13. The dealer shows a weak 5. Basic strategy says: Stand here and let the dealer take the risk of busting.",
     allowedAction: "stand",
     deck: [
       card("10", "hearts"),
@@ -88,10 +104,12 @@ const tutorialHands = [
       card("10", "diamonds"),
       card("J", "clubs"),
     ],
-    resultInstruction: "Result: you win. You stood on 13 because the dealer showed a weak 5. The dealer had 15, had to hit, drew a 10-value card, and busted.",
+    resultInstruction:
+      "Result: you win. You stood on 13 because the dealer showed a weak 5. The dealer had 15, had to hit, drew a 10-value card, and busted.",
   },
   {
-    instruction: "You have an Ace and a 2. This is a 'Soft 13' because the Ace can count as 1 or 11. You cannot bust by hitting. Let's take a card.",
+    instruction:
+      "You have an Ace and a 2. This is a 'Soft 13' because the Ace can count as 1 or 11. You cannot bust by hitting. Let's take a card.",
     allowedAction: "hit",
     deck: [
       card("A", "spades"),
@@ -101,11 +119,14 @@ const tutorialHands = [
       card("8", "clubs"),
       card("2", "spades"),
     ],
-    afterHitInstruction: "Perfect! If your first two cards had totaled a hard 11 instead of a soft 13, you would have seen a 'Double Down' option. This lets you double your bet in exchange for exactly ONE more card--the ultimate offensive move when the dealer shows a weak card like a 6.",
-    resultInstruction: "Result: you win. Your hit turned soft 13 into 21. The dealer finished at 18, so your 21 beat the dealer without needing blackjack.",
+    afterHitInstruction:
+      "Perfect! If your first two cards had totaled a hard 11 instead of a soft 13, you would have seen a 'Double Down' option. This lets you double your bet in exchange for exactly ONE more card--the ultimate offensive move when the dealer shows a weak card like a 6.",
+    resultInstruction:
+      "Result: you win. Your hit turned soft 13 into 21. The dealer finished at 18, so your 21 beat the dealer without needing blackjack.",
   },
   {
-    instruction: "A pair of 8s totals 16--notoriously the worst starting hand in Blackjack. Standing usually loses, and hitting will likely bust you. Because you have a pair, your secret weapon is 'Splitting'. This separates them into two hands, turning a bad situation into two offensive positions.",
+    instruction:
+      "A pair of 8s totals 16--notoriously the worst starting hand in Blackjack. Standing usually loses, and hitting will likely bust you. Because you have a pair, your secret weapon is 'Splitting'. This separates them into two hands, turning a bad situation into two offensive positions.",
     allowedAction: "split",
     deck: [
       card("8", "hearts"),
@@ -115,12 +136,16 @@ const tutorialHands = [
       card("10", "clubs"),
       card("9", "hearts"),
     ],
-    afterSplitInstruction: "Great split. Hand 1 is now 18, a strong total against the dealer's 7. Stand and move to Hand 2.",
-    secondHandInstruction: "Hand 2 is 17. It is not flashy, but it is much better than playing one hard 16. Stand and let the dealer resolve the hand.",
-    resultInstruction: "Result: Hand 1 wins and Hand 2 pushes. The dealer finished at 17. Your first split hand had 18, so it won. Your second split hand also had 17, so that hand tied the dealer and your bet was returned.",
+    afterSplitInstruction:
+      "Great split. Hand 1 is now 18, a strong total against the dealer's 7. Stand and move to Hand 2.",
+    secondHandInstruction:
+      "Hand 2 is 17. It is not flashy, but it is much better than playing one hard 16. Stand and let the dealer resolve the hand.",
+    resultInstruction:
+      "Result: Hand 1 wins and Hand 2 pushes. The dealer finished at 17. Your first split hand had 18, so it won. Your second split hand also had 17, so that hand tied the dealer and your bet was returned.",
   },
   {
-    instruction: "You have hard 11 against a dealer 6. This is one of the clearest attacking spots in blackjack. Double down to double your bet and take exactly one more card.",
+    instruction:
+      "You have hard 11 against a dealer 6. This is one of the clearest attacking spots in blackjack. Double down to double your bet and take exactly one more card.",
     allowedAction: "double",
     deck: [
       card("6", "hearts"),
@@ -130,10 +155,12 @@ const tutorialHands = [
       card("K", "clubs"),
       card("5", "hearts"),
     ],
-    resultInstruction: "Result: push. Doubling on 11 was still the right play, but the dealer drew to 21 too. A push returns the doubled bet instead of winning or losing it.",
+    resultInstruction:
+      "Result: push. Doubling on 11 was still the right play, but the dealer drew to 21 too. A push returns the doubled bet instead of winning or losing it.",
   },
   {
-    instruction: "You have hard 16 against a dealer 10. It feels uncomfortable, but the dealer is showing strength. Basic strategy says to hit because standing loses too often.",
+    instruction:
+      "You have hard 16 against a dealer 10. It feels uncomfortable, but the dealer is showing strength. Basic strategy says to hit because standing loses too often.",
     allowedAction: "hit",
     deck: [
       card("10", "hearts"),
@@ -142,11 +169,14 @@ const tutorialHands = [
       card("7", "diamonds"),
       card("3", "clubs"),
     ],
-    afterHitInstruction: "Nice. You improved hard 16 to 19. Stand and make the dealer finish the hand.",
-    resultInstruction: "Result: you win. Hitting hard 16 was risky, but standing against a dealer 10 loses too often. The hit made 19, which beat the dealer's 17.",
+    afterHitInstruction:
+      "Nice. You improved hard 16 to 19. Stand and make the dealer finish the hand.",
+    resultInstruction:
+      "Result: you win. Hitting hard 16 was risky, but standing against a dealer 10 loses too often. The hit made 19, which beat the dealer's 17.",
   },
   {
-    instruction: "You have soft 18 against a dealer 9. Soft 18 looks strong, but against a strong dealer upcard it often needs improvement. Hit because the ace protects you from busting.",
+    instruction:
+      "You have soft 18 against a dealer 9. Soft 18 looks strong, but against a strong dealer upcard it often needs improvement. Hit because the ace protects you from busting.",
     allowedAction: "hit",
     deck: [
       card("A", "spades"),
@@ -156,11 +186,14 @@ const tutorialHands = [
       card("2", "clubs"),
       card("10", "spades"),
     ],
-    afterHitInstruction: "Good hit. Soft 18 became soft 20. Stand and let the dealer play out the hand.",
-    resultInstruction: "Result: you win. Soft 18 improved to soft 20, and the dealer busted while trying to draw from 16.",
+    afterHitInstruction:
+      "Good hit. Soft 18 became soft 20. Stand and let the dealer play out the hand.",
+    resultInstruction:
+      "Result: you win. Soft 18 improved to soft 20, and the dealer busted while trying to draw from 16.",
   },
   {
-    instruction: "You have two 10-value cards for a total of 20. Even against a weak dealer 6, do not split 10s. A made 20 is already one of the best hands you can have.",
+    instruction:
+      "You have two 10-value cards for a total of 20. Even against a weak dealer 6, do not split 10s. A made 20 is already one of the best hands you can have.",
     allowedAction: "stand",
     deck: [
       card("10", "hearts"),
@@ -169,41 +202,21 @@ const tutorialHands = [
       card("10", "diamonds"),
       card("Q", "clubs"),
     ],
-    resultInstruction: "Result: you win. You kept the made 20 instead of splitting 10s. The dealer busted from 16, and your strong hand was paid.",
+    resultInstruction:
+      "Result: you win. You kept the made 20 instead of splitting 10s. The dealer busted from 16, and your strong hand was paid.",
   },
 ];
 
 function money(value) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
+  return gameCore.money(value);
 }
 
 function card(label, suitName) {
-  const rank = ranks.find((item) => item.label === label);
-  const suit = suits.find((item) => item.name === suitName);
-  return { ...rank, suit: suit.symbol, suitName: suit.name, color: suit.color };
+  return gameCore.createCard(label, suitName, "blackjack");
 }
 
 function buildDeck() {
-  const deck = [];
-  for (const suit of suits) {
-    for (const rank of ranks) {
-      deck.push(card(rank.label, suit.name));
-    }
-  }
-  return shuffle(deck);
-}
-
-function shuffle(cards) {
-  const shuffled = [...cards];
-  for (let i = shuffled.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
+  return gameCore.buildShoe(1, "blackjack");
 }
 
 function drawCard() {
@@ -218,76 +231,18 @@ function drawCard() {
   return state.deck.pop();
 }
 
-function handScore(cards) {
-  let total = cards.reduce((sum, card) => sum + card.value, 0);
-  let aces = cards.filter((card) => card.label === "A").length;
-  let acesAdjusted = 0;
-
-  while (total > 21 && aces > 0) {
-    total -= 10;
-    aces -= 1;
-    acesAdjusted += 1;
-  }
-
-  return {
-    total,
-    isSoft: cards.some((card) => card.label === "A") && aces > 0,
-    acesAdjusted,
-  };
-}
-
-function handValue(cards) {
-  return handScore(cards).total;
-}
-
-function handLabel(cards) {
-  const score = handScore(cards);
-  return score.isSoft ? `Soft ${score.total}` : String(score.total);
-}
-
-function readHighBankroll() {
-  try {
-    return Math.max(
-      1000,
-      Number(localStorage.getItem(highBankrollKey)) ||
-        Number(localStorage.getItem(legacyHighBankrollKey)) ||
-        1000
-    );
-  } catch {
-    return 1000;
-  }
-}
-
-function readBankroll() {
-  try {
-    const storedBankroll = localStorage.getItem(bankrollKey);
-    if (storedBankroll === null) return 1000;
-
-    const savedBankroll = Number(storedBankroll);
-    return Number.isFinite(savedBankroll) && savedBankroll >= 0
-      ? savedBankroll
-      : 1000;
-  } catch {
-    return 1000;
-  }
-}
+const { handLabel, handValue } = blackjackEngine;
 
 function saveBankroll() {
   if (state.tutorial.active) return;
-
-  try {
-    localStorage.setItem(bankrollKey, String(state.bankroll));
-  } catch {
-    // Local storage can be unavailable in some browser privacy modes.
-  }
+  blackjackStorage.write({
+    bankroll: state.bankroll,
+    highBankroll: state.highBankroll,
+  });
 }
 
 function saveHighBankroll() {
-  try {
-    localStorage.setItem(highBankrollKey, String(state.highBankroll));
-  } catch {
-    // Local storage can be unavailable in some browser privacy modes.
-  }
+  saveBankroll();
 }
 
 function updateHighBankroll() {
@@ -297,17 +252,12 @@ function updateHighBankroll() {
   saveHighBankroll();
 }
 
-function isSoftTotal(cards) {
-  return handScore(cards).isSoft;
-}
-
 function dealerShouldHit() {
-  const total = handValue(state.dealer);
-  return total < 17 || (total === 17 && isSoftTotal(state.dealer));
+  return blackjackEngine.dealerShouldHit(state.dealer);
 }
 
 function isBlackjack(hand) {
-  return !hand.wasSplit && hand.cards.length === 2 && handValue(hand.cards) === 21;
+  return blackjackEngine.isNaturalBlackjack(hand);
 }
 
 function activeHand() {
@@ -320,7 +270,7 @@ function tableBet() {
 
 function addBet(amount) {
   if (!tutorialCanUse("chip")) return;
-  if (state.phase !== "betting" || amount > state.bankroll) return;
+  if (state.phase !== GAME_PHASES.BETTING || amount > state.bankroll) return;
   state.bankroll -= amount;
   state.bet += amount;
   state.betChips.push(amount);
@@ -330,7 +280,7 @@ function addBet(amount) {
 
 function clearBet() {
   if (!tutorialCanUse("clear")) return;
-  if (state.phase !== "betting") return;
+  if (state.phase !== GAME_PHASES.BETTING) return;
   state.bankroll += state.bet;
   state.bet = 0;
   state.betChips = [];
@@ -340,24 +290,26 @@ function clearBet() {
 
 function deal() {
   if (!tutorialCanUse("deal")) return;
-  if (state.phase !== "betting" || state.bet <= 0) return;
+  if (state.phase !== GAME_PHASES.BETTING || state.bet <= 0) return;
 
   const playerFirst = drawCard();
   const dealerUpcard = drawCard();
   const playerSecond = drawCard();
   const dealerHoleCard = drawCard();
 
-  state.hands = [{
-    cards: [playerFirst, playerSecond],
-    bet: state.bet,
-    status: "playing",
-    result: "",
-    wasSplit: false,
-  }];
+  state.hands = [
+    {
+      cards: [playerFirst, playerSecond],
+      bet: state.bet,
+      status: "playing",
+      result: "",
+      wasSplit: false,
+    },
+  ];
   state.bet = 0;
   state.activeHand = 0;
   state.dealer = [dealerUpcard, dealerHoleCard];
-  state.phase = "playing";
+  state.phase = GAME_PHASES.PLAYING;
   state.revealDealer = false;
 
   if (isBlackjack(activeHand()) || handValue(state.dealer) === 21) {
@@ -373,7 +325,7 @@ function deal() {
 function hit() {
   if (!tutorialCanUse("hit")) return;
   const hand = activeHand();
-  if (state.phase !== "playing" || !hand) return;
+  if (state.phase !== GAME_PHASES.PLAYING || !hand) return;
 
   hand.cards.push(drawCard());
 
@@ -392,7 +344,7 @@ function hit() {
 function stand() {
   if (!tutorialCanUse("stand")) return;
   const hand = activeHand();
-  if (state.phase !== "playing" || !hand) return;
+  if (state.phase !== GAME_PHASES.PLAYING || !hand) return;
 
   hand.status = "stood";
   hand.result = "Stood";
@@ -403,7 +355,7 @@ function stand() {
 function doubleDown() {
   if (!tutorialCanUse("double")) return;
   const hand = activeHand();
-  if (state.phase !== "playing" || !canDoubleHand(hand)) return;
+  if (state.phase !== GAME_PHASES.PLAYING || !canDoubleHand(hand)) return;
 
   state.bankroll -= hand.bet;
   state.betChips.push(hand.bet);
@@ -417,7 +369,7 @@ function doubleDown() {
 function splitHand() {
   if (!tutorialCanUse("split")) return;
   const hand = activeHand();
-  if (state.phase !== "playing" || !canSplitHand(hand)) return;
+  if (state.phase !== GAME_PHASES.PLAYING || !canSplitHand(hand)) return;
 
   state.bankroll -= hand.bet;
   state.betChips.push(hand.bet);
@@ -433,19 +385,11 @@ function splitHand() {
 }
 
 function canDoubleHand(hand) {
-  return Boolean(hand)
-    && hand.status === "playing"
-    && hand.cards.length === 2
-    && state.bankroll >= hand.bet;
+  return blackjackEngine.canDoubleHand(hand, state.bankroll);
 }
 
 function canSplitHand(hand) {
-  return Boolean(hand)
-    && state.hands.length === 1
-    && hand.status === "playing"
-    && hand.cards.length === 2
-    && hand.cards[0].value === hand.cards[1].value
-    && state.bankroll >= hand.bet;
+  return blackjackEngine.canSplitHand(hand, state.hands.length, state.bankroll);
 }
 
 function tutorialCanUse(action) {
@@ -470,7 +414,7 @@ function startTutorial() {
   state.message = "Click Deal to start the tutorial.";
   setTutorialGate(
     "Welcome to Blackjack! Your goal is to get closer to 21 than the dealer without going over (busting). Click Deal to begin the first guided hand.",
-    "deal"
+    "deal",
   );
   render();
 }
@@ -485,7 +429,7 @@ function prepareTutorialHand() {
   state.hands = [];
   state.dealer = [];
   state.activeHand = 0;
-  state.phase = "betting";
+  state.phase = GAME_PHASES.BETTING;
   state.revealDealer = false;
   state.tutorial.deck = scenario.deck.map((item) => ({ ...item }));
   state.tutorial.pendingAfterHit = false;
@@ -495,7 +439,10 @@ function prepareTutorialHand() {
 function setupTutorialHand() {
   const scenario = currentTutorialHand();
   if (!scenario) {
-    setTutorialGate("Tutorial complete. You can start a normal blackjack game whenever you're ready.", "new-game");
+    setTutorialGate(
+      "Tutorial complete. You can start a normal blackjack game whenever you're ready.",
+      "new-game",
+    );
     state.tutorial.active = false;
     render();
     return;
@@ -536,7 +483,9 @@ function tutorialBeforeAdvanceFromStand() {
   const scenario = currentTutorialHand();
   if (!scenario.secondHandInstruction) return;
 
-  const nextIndex = state.hands.findIndex((hand, index) => index > state.activeHand && hand.status === "waiting");
+  const nextIndex = state.hands.findIndex(
+    (hand, index) => index > state.activeHand && hand.status === "waiting",
+  );
   if (nextIndex >= 0) {
     setTutorialGate(scenario.secondHandInstruction, "stand");
   }
@@ -576,7 +525,9 @@ function stopTutorial() {
 }
 
 function advanceHand() {
-  const nextIndex = state.hands.findIndex((hand, index) => index > state.activeHand && hand.status === "waiting");
+  const nextIndex = state.hands.findIndex(
+    (hand, index) => index > state.activeHand && hand.status === "waiting",
+  );
 
   if (nextIndex >= 0) {
     state.activeHand = nextIndex;
@@ -590,11 +541,11 @@ function advanceHand() {
 }
 
 function dealerShouldPlay() {
-  return state.hands.some((hand) => handValue(hand.cards) <= 21);
+  return blackjackEngine.dealerShouldPlay(state.hands);
 }
 
 function settleRound() {
-  state.phase = "settled";
+  state.phase = GAME_PHASES.SETTLED;
   state.revealDealer = true;
 
   const hasNaturalBlackjack = state.hands.some((hand) => isBlackjack(hand));
@@ -605,42 +556,16 @@ function settleRound() {
     }
   }
 
-  const dealerTotal = handValue(state.dealer);
-  const dealerBlackjack = state.dealer.length === 2 && dealerTotal === 21;
-  let totalPayout = 0;
-
-  state.hands.forEach((hand) => {
-    const playerTotal = handValue(hand.cards);
-    let payout = 0;
-
-    if (isBlackjack(hand) && !dealerBlackjack) {
-      payout = Math.floor(hand.bet * 2.5);
-      hand.result = "Blackjack";
-    } else if (dealerBlackjack && !isBlackjack(hand)) {
-      hand.result = "Dealer blackjack";
-    } else if (playerTotal > 21) {
-      hand.result = "Bust";
-    } else if (dealerTotal > 21) {
-      payout = hand.bet * 2;
-      hand.result = "Win";
-    } else if (playerTotal > dealerTotal) {
-      payout = hand.bet * 2;
-      hand.result = "Win";
-    } else if (playerTotal === dealerTotal) {
-      payout = hand.bet;
-      hand.result = "Push";
-    } else {
-      hand.result = "Lose";
-    }
-
-    hand.status = "settled";
-    totalPayout += payout;
+  const settlement = blackjackEngine.settleHands(state.hands, state.dealer);
+  state.hands.forEach((hand, index) => {
+    hand.result = settlement.settlements[index].result;
+    hand.status = settlement.settlements[index].status;
   });
 
-  state.bankroll += totalPayout;
+  state.bankroll += settlement.totalPayout;
   updateHighBankroll();
   saveBankroll();
-  state.message = roundSummary(totalPayout);
+  state.message = roundSummary(settlement.totalPayout);
 
   if (state.bankroll <= 0) {
     state.message = "You're out of chips. Start a new game to reset your bankroll.";
@@ -672,16 +597,17 @@ function resetRound() {
     if (tutorialCanUse("next")) tutorialNextHand();
     return;
   }
-  if (state.phase === "playing") return;
+  if (state.phase === GAME_PHASES.PLAYING) return;
   state.hands = [];
   state.dealer = [];
   state.betChips = [];
   state.activeHand = 0;
   state.revealDealer = false;
-  state.phase = "betting";
-  state.message = state.bankroll > 0
-    ? "Place your bet to start a hand."
-    : "You're out of chips. Start a new game to reset your bankroll.";
+  state.phase = GAME_PHASES.BETTING;
+  state.message =
+    state.bankroll > 0
+      ? "Place your bet to start a hand."
+      : "You're out of chips. Start a new game to reset your bankroll.";
   render();
 }
 
@@ -689,7 +615,7 @@ function newGame(resetBankroll = true) {
   if (state.tutorial.active && !tutorialCanUse("new-game")) return;
   stopTutorial();
   if (resetBankroll) {
-    state.bankroll = 1000;
+    state.bankroll = startingBankroll;
     saveBankroll();
   }
   state.bet = 0;
@@ -698,7 +624,7 @@ function newGame(resetBankroll = true) {
   state.hands = [];
   state.activeHand = 0;
   state.dealer = [];
-  state.phase = "betting";
+  state.phase = GAME_PHASES.BETTING;
   state.revealDealer = false;
   state.message = "Place your bet to start a hand.";
   render();
@@ -740,7 +666,7 @@ function renderPlayerHands() {
 
   state.hands.forEach((hand, index) => {
     const panel = document.createElement("article");
-    const isActive = state.phase === "playing" && index === state.activeHand;
+    const isActive = state.phase === GAME_PHASES.PLAYING && index === state.activeHand;
     panel.className = `player-hand-panel ${isActive ? "active" : ""}`;
 
     const meta = document.createElement("div");
@@ -763,7 +689,7 @@ function renderPlayerHands() {
 
     const chipRail = document.createElement("div");
     chipRail.className = "hand-chip-rail";
-    if (state.hands.length === 1 && state.phase !== "betting") {
+    if (state.hands.length === 1 && state.phase !== GAME_PHASES.BETTING) {
       renderChipStack(chipRail, {
         chips: chipAmountsForBet(hand.bet),
         visibleLimit: 4,
@@ -826,8 +752,8 @@ function render() {
   const hiddenDealer = state.dealer.length > 1 && !state.revealDealer;
   const visibleDealerTotal = hiddenDealer ? String(state.dealer[0].value) : handLabel(state.dealer);
   const hand = activeHand();
-  const inBetting = state.phase === "betting";
-  const inPlaying = state.phase === "playing";
+  const inBetting = state.phase === GAME_PHASES.BETTING;
+  const inPlaying = state.phase === GAME_PHASES.PLAYING;
 
   els.bankroll.textContent = money(state.bankroll);
   els.highBankroll.textContent = money(state.highBankroll);
@@ -857,7 +783,7 @@ function render() {
   els.newGame.disabled = state.tutorial.active && !tutorialCanUse("new-game");
   els.nextHand.disabled = state.tutorial.active
     ? !tutorialCanUse("next")
-    : state.phase !== "settled" || state.bankroll <= 0;
+    : state.phase !== GAME_PHASES.SETTLED || state.bankroll <= 0;
   renderTutorialOverlay();
 }
 
@@ -914,7 +840,7 @@ function showTooltip(button) {
   const idealLeft = buttonRect.left + buttonRect.width / 2 - tooltipRect.width / 2;
   const left = Math.min(
     window.innerWidth - tooltipRect.width - margin,
-    Math.max(margin, idealLeft)
+    Math.max(margin, idealLeft),
   );
   const top = Math.max(margin, buttonRect.top + window.scrollY - tooltipRect.height - 12);
   const arrowLeft = buttonRect.left + buttonRect.width / 2 - left;

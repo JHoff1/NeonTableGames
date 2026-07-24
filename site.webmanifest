@@ -28,6 +28,19 @@
           "type": "image/svg+xml"
         }
       ]
+    },
+    {
+      "name": "Play Mini Baccarat",
+      "short_name": "Baccarat",
+      "description": "Open the free Mini Baccarat table.",
+      "url": "/baccarat/",
+      "icons": [
+        {
+          "src": "/favicon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
     }
   ]
 }

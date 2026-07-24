@@ -1,6 +1,6 @@
 # Visual Regression Checklist
 
-Run `npm run test:visual` before deploying layout or CSS changes. The automated suite covers Chromium geometry and overflow checks at representative viewport sizes. Use this checklist for browser and real-device behavior that desktop emulation cannot fully reproduce.
+Run `npm test` before deploying game, layout, or CSS changes. It includes ESLint, Prettier verification, unit tests, Chromium geometry and overflow checks, and automated WCAG A/AA scans for Blackjack and Mini Baccarat. Use this checklist for browser and real-device behavior that desktop emulation cannot fully reproduce.
 
 ## Viewports
 

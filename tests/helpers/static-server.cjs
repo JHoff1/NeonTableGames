@@ -46,7 +46,8 @@ const server = http.createServer((request, response) => {
 
     response.writeHead(200, {
       "Cache-Control": "no-store",
-      "Content-Type": contentTypes[path.extname(filePath).toLowerCase()] || "application/octet-stream",
+      "Content-Type":
+        contentTypes[path.extname(filePath).toLowerCase()] || "application/octet-stream",
     });
     fs.createReadStream(filePath).pipe(response);
   });

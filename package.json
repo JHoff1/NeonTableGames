@@ -3,12 +3,22 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "test": "npm run test:visual",
+    "check": "npm run lint && npm run format:check",
+    "format": "prettier --write \"*.{js,cjs,json}\" \"shared/*.js\" \"tests/**/*.cjs\"",
+    "format:check": "prettier --check \"*.{js,cjs,json}\" \"shared/*.js\" \"tests/**/*.cjs\"",
+    "lint": "eslint .",
+    "test": "npm run check && npm run test:unit && npm run test:visual",
+    "test:unit": "node --test tests/unit/game-core.test.cjs tests/unit/blackjack-engine.test.cjs tests/unit/baccarat-engine.test.cjs",
     "test:visual": "playwright test",
     "test:visual:headed": "playwright test --headed",
     "test:visual:report": "playwright show-report"
   },
   "devDependencies": {
-    "@playwright/test": "^1.61.1"
+    "@axe-core/playwright": "^4.12.1",
+    "@eslint/js": "^9.39.0",
+    "@playwright/test": "^1.61.1",
+    "eslint": "^9.39.0",
+    "globals": "^17.7.0",
+    "prettier": "^3.9.6"
   }
 }
