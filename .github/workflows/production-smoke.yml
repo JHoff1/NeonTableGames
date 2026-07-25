@@ -14,7 +14,7 @@ jobs:
   production:
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 22
 
     steps:
       - name: Check out deployed revision
@@ -39,13 +39,13 @@ jobs:
         env:
           EXPECTED_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
-          for attempt in {1..40}; do
+          for attempt in {1..90}; do
             deployed="$(curl --fail --silent --show-error https://neontablegames.com/deployment-version.json || true)"
             if printf '%s' "$deployed" | grep --fixed-strings --quiet "$EXPECTED_SHA"; then
               echo "Production is serving $EXPECTED_SHA"
               exit 0
             fi
-            echo "Waiting for Netlify revision $EXPECTED_SHA ($attempt/40)"
+            echo "Waiting for Netlify revision $EXPECTED_SHA ($attempt/90)"
             sleep 10
           done
           echo "Timed out waiting for Netlify revision $EXPECTED_SHA"

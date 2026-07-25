@@ -62,36 +62,63 @@
       return typeof settings?.get === "function" ? settings.get() : sanitize(settings);
     }
 
+    function unlockAudio() {
+      if (!preferences().sound) return;
+      const AudioContext = global.AudioContext || global.webkitAudioContext;
+      if (!AudioContext) return;
+      audioContext ||= new AudioContext();
+      if (audioContext.state === "suspended") void audioContext.resume();
+    }
+
     function cue(type) {
       if (!preferences().sound) return;
       const AudioContext = global.AudioContext || global.webkitAudioContext;
       if (!AudioContext) return;
       audioContext ||= new AudioContext();
-      if (audioContext.state === "suspended") audioContext.resume();
-      const oscillator = audioContext.createOscillator();
-      const gain = audioContext.createGain();
-      oscillator.frequency.value = type === "win" ? 640 : type === "deal" ? 320 : 220;
-      gain.gain.setValueAtTime(0.035, audioContext.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.09);
-      oscillator.connect(gain);
-      gain.connect(audioContext.destination);
-      oscillator.start();
-      oscillator.stop(audioContext.currentTime + 0.09);
+
+      function play() {
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        oscillator.frequency.value = type === "win" ? 640 : type === "deal" ? 320 : 220;
+        gain.gain.setValueAtTime(0.035, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.09);
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.09);
+      }
+
+      if (audioContext.state === "suspended") {
+        void audioContext.resume().then(play, () => {});
+      } else {
+        play();
+      }
     }
 
     function vibrate(pattern = 18) {
       if (preferences().haptics && global.navigator?.vibrate) global.navigator.vibrate(pattern);
     }
 
-    return Object.freeze({ cue, vibrate });
+    global.document?.addEventListener("pointerdown", unlockAudio, { capture: true });
+    global.document?.addEventListener("keydown", unlockAudio, { capture: true });
+
+    return Object.freeze({ cue, unlockAudio, vibrate });
   }
 
   function bindSettingsDialog({ controls, dialog, onChange, store, trigger }) {
     const entries = Object.entries(controls);
+    const haptics = controls.haptics;
+    if (haptics && typeof global.navigator?.vibrate !== "function") {
+      haptics.disabled = true;
+      haptics.checked = false;
+      haptics.closest("label")?.classList.add("setting-unavailable");
+      const description = haptics.closest("label")?.querySelector("small");
+      if (description) description.textContent = "Not supported by this browser.";
+    }
     trigger.addEventListener("click", () => {
       const settings = store.get();
       entries.forEach(([name, input]) => {
-        input.checked = settings[name];
+        input.checked = name === "haptics" && input.disabled ? false : settings[name];
       });
       dialog.showModal();
     });

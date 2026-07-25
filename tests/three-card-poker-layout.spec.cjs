@@ -40,7 +40,7 @@ async function expectHealthyPokerLayout(page, stateName) {
     checkPairs(".player-side .card", ".poker-center", "Player cards overlap the center");
     checkPairs(".poker-tutorial", ".dealer-side .card", "Tutorial overlaps Dealer cards");
     checkPairs(".poker-felt", ".poker-controls", "Felt overlaps controls");
-    checkPairs(".poker-controls", ".poker-session", "Controls overlap session");
+    checkPairs(".poker-controls", ".game-session", "Controls overlap session");
 
     const felt = document.querySelector(".poker-felt");
     if (visible(felt)) {
@@ -80,10 +80,11 @@ async function clickEnabled(page, selector) {
   await button.click();
 }
 
-test("Three Card Poker supports Play, recovery, Rebet, and Fold", async ({ page }) => {
+test("Three Card Poker supports Play, recovery, previous wagers, and Fold", async ({ page }) => {
   await page.goto("/three-card-poker/");
   await expect(page.locator("#poker-message")).toContainText("Place an Ante");
   await expectHealthyPokerLayout(page, "empty poker table");
+  await expect(page.locator(".poker-controls")).toBeInViewport();
 
   await clickEnabled(page, '[data-poker-chip="25"]');
   await clickEnabled(page, '[data-poker-bet="pairPlus"]');
@@ -99,6 +100,7 @@ test("Three Card Poker supports Play, recovery, Rebet, and Fold", async ({ page 
   await expect(page.locator("#poker-player-hand .card")).toHaveCount(3);
   await expect(page.locator("#poker-dealer-hand .card.back")).toHaveCount(3);
   await expectHealthyPokerLayout(page, "dealt poker table");
+  await expect(page.locator(".poker-controls")).toBeInViewport();
 
   await page.reload();
   await expect(page.locator("#poker-message")).toContainText("restored");
@@ -113,7 +115,10 @@ test("Three Card Poker supports Play, recovery, Rebet, and Fold", async ({ page 
   await expectHealthyPokerLayout(page, "settled poker table");
 
   await clickEnabled(page, "#poker-next");
-  await clickEnabled(page, "#poker-rebet");
+  await expect(page.locator("#poker-ante")).toHaveText("$25");
+  await expect(page.locator("#poker-pair-plus")).toHaveText("$5");
+  await expect(page.locator("#poker-player-hand .card")).toHaveCount(0);
+  await clickEnabled(page, "#poker-deal");
   await expect(page.locator("#poker-player-hand .card")).toHaveCount(3);
   await clickEnabled(page, "#poker-fold");
   await expect(page.locator("#poker-result")).toHaveText("Fold");

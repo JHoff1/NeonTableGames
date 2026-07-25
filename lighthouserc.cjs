@@ -1,7 +1,7 @@
 module.exports = {
   ci: {
     collect: {
-      numberOfRuns: 1,
+      numberOfRuns: 3,
       settings: {
         chromeFlags: "--headless --no-sandbox",
         formFactor: "mobile",
@@ -13,8 +13,9 @@ module.exports = {
           width: 390,
         },
       },
-      startServerCommand: "node tests/helpers/static-server.cjs 4174",
-      startServerReadyPattern: "Static test server listening",
+      startServerCommand:
+        "npm run build && npm run preview -- --host 127.0.0.1 --port 4174 --strictPort",
+      startServerReadyPattern: "127.0.0.1:4174",
       url: [
         "http://127.0.0.1:4174/",
         "http://127.0.0.1:4174/blackjack/",

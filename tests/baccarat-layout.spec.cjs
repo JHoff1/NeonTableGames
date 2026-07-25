@@ -52,7 +52,7 @@ async function expectHealthyBaccaratLayout(page, stateName) {
     checkPairs(".player-side .card", ".baccarat-center", "Player card overlaps center");
     checkPairs(".baccarat-tutorial", ".banker-side .card", "Tutorial overlaps Banker cards");
     checkPairs(".baccarat-felt", ".baccarat-controls", "Felt overlaps controls");
-    checkPairs(".baccarat-controls", ".baccarat-session", "Controls overlap session statistics");
+    checkPairs(".baccarat-controls", ".game-session", "Controls overlap session statistics");
 
     const felt = document.querySelector(".baccarat-felt");
     if (visible(felt)) {
@@ -115,10 +115,23 @@ async function revealAllBaccaratCards(page, { minimum = 2 } = {}) {
   }
 }
 
+async function actionTrayPosition(page, selector) {
+  return page.locator(selector).evaluate((element) => {
+    const bounds = element.getBoundingClientRect();
+    return {
+      bottom: bounds.bottom,
+      top: bounds.top,
+      viewportHeight: window.innerHeight,
+    };
+  });
+}
+
 test("Baccarat betting and settlement keep a stable layout", async ({ page }) => {
   await page.goto("/baccarat/");
   await expect(page.locator("#baccarat-message")).toContainText("Choose Player");
   await expectHealthyBaccaratLayout(page, "empty Baccarat table");
+  const emptyControls = await actionTrayPosition(page, ".baccarat-controls");
+  expect(emptyControls.bottom).toBeLessThanOrEqual(emptyControls.viewportHeight + 2);
 
   await clickEnabled(page, '[data-bet-type="banker"]');
   await clickEnabled(page, '[data-baccarat-chip="25"]');
@@ -137,11 +150,18 @@ test("Baccarat betting and settlement keep a stable layout", async ({ page }) =>
   expect(dealtCardCount).toBeGreaterThanOrEqual(4);
   expect(dealtCardCount).toBeLessThanOrEqual(6);
   await expectHealthyBaccaratLayout(page, "settled Baccarat round");
+  const settledControls = await actionTrayPosition(page, ".baccarat-controls");
+  expect(settledControls.bottom).toBeLessThanOrEqual(settledControls.viewportHeight + 2);
+  expect(Math.abs(settledControls.top - emptyControls.top)).toBeLessThanOrEqual(2);
 
   await clickEnabled(page, "#baccarat-next");
-  await clickEnabled(page, "#baccarat-rebet");
   await expect(page.locator("#baccarat-bet")).toHaveText("$25");
   await expect(page.locator('[data-bet-type="banker"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator(".baccarat-hand .card")).toHaveCount(0);
+  const nextControls = await actionTrayPosition(page, ".baccarat-controls");
+  expect(nextControls.bottom).toBeLessThanOrEqual(nextControls.viewportHeight + 2);
+  expect(Math.abs(nextControls.top - settledControls.top)).toBeLessThanOrEqual(2);
+  await clickEnabled(page, "#baccarat-deal");
   await revealAllBaccaratCards(page);
   await expect(page.locator("#session-rounds")).toHaveText("2");
   await expect(page.locator(".history-marker")).toHaveCount(2);
@@ -155,8 +175,8 @@ test("Baccarat betting and settlement keep a stable layout", async ({ page }) =>
 
   await clickEnabled(page, "#baccarat-summary");
   await expect(page.locator("#baccarat-summary-dialog")).toBeVisible();
-  await expect(page.locator("#session-summary-content")).toContainText("Rounds played");
-  await expect(page.locator("#session-summary-content")).toContainText("2");
+  await expect(page.locator("#baccarat-summary-content")).toContainText("Rounds played");
+  await expect(page.locator("#baccarat-summary-content")).toContainText("2");
   await page.locator("#baccarat-summary-dialog .dialog-done").click();
 
   const completedBankroll = await page.locator("#baccarat-bankroll").textContent();
@@ -164,7 +184,6 @@ test("Baccarat betting and settlement keep a stable layout", async ({ page }) =>
   await expect(page.locator("#baccarat-bankroll")).toHaveText(completedBankroll);
   await expect(page.locator("#session-rounds")).toHaveText("2");
   await expect(page.locator(".history-marker")).toHaveCount(2);
-  await expect(page.locator("#baccarat-rebet")).toBeEnabled();
   await expectHealthyBaccaratLayout(page, "restored Baccarat bankroll");
 
   await clickEnabled(page, "#baccarat-new-game");
@@ -176,6 +195,7 @@ test("Baccarat betting and settlement keep a stable layout", async ({ page }) =>
   await clickEnabled(page, "#baccarat-deal");
   await revealAllBaccaratCards(page);
   await clickEnabled(page, "#baccarat-next");
+  await clickEnabled(page, "#baccarat-clear");
   await clickEnabled(page, "#baccarat-reset-session");
   await expect(page.locator("#session-rounds")).toHaveText("0");
   await expect(page.locator(".history-marker")).toHaveCount(0);
@@ -228,19 +248,22 @@ test("Baccarat can automatically reveal Player cards and remembers the setting",
 test("sound and haptic preferences are shared across games", async ({ page }) => {
   await page.goto("/baccarat/");
   await clickEnabled(page, "#baccarat-settings");
-  await page.locator("#setting-sound").check();
-  await page.locator("#setting-haptics").check();
+  await page.locator("#baccarat-setting-sound").check();
+  const hapticsSupported = await page.locator("#baccarat-setting-haptics").isEnabled();
+  if (hapticsSupported) await page.locator("#baccarat-setting-haptics").check();
   await page.locator("#baccarat-settings-dialog .dialog-done").click();
 
   await page.goto("/blackjack/");
   await clickEnabled(page, "#blackjack-settings");
   await expect(page.locator("#blackjack-setting-sound")).toBeChecked();
-  await expect(page.locator("#blackjack-setting-haptics")).toBeChecked();
+  if (hapticsSupported) await expect(page.locator("#blackjack-setting-haptics")).toBeChecked();
+  else await expect(page.locator("#blackjack-setting-haptics")).toBeDisabled();
 
   await page.goto("/three-card-poker/");
   await clickEnabled(page, "#poker-settings");
   await expect(page.locator("#poker-setting-sound")).toBeChecked();
-  await expect(page.locator("#poker-setting-haptics")).toBeChecked();
+  if (hapticsSupported) await expect(page.locator("#poker-setting-haptics")).toBeChecked();
+  else await expect(page.locator("#poker-setting-haptics")).toBeDisabled();
 });
 
 test("all guided Baccarat rounds avoid overlap", async ({ page }) => {

@@ -128,6 +128,7 @@ test("empty table and a dealt hand keep a stable layout", async ({ page }) => {
   await page.goto("/blackjack/");
   await expect(page.locator("#message")).toHaveText("Place your bet to start a hand.");
   await expectHealthyGameLayout(page, "empty table");
+  await expect(page.locator(".controls")).toBeInViewport();
 
   await clickEnabled(page, '[data-chip="25"]');
   await expectHealthyGameLayout(page, "bet placed");
@@ -137,6 +138,7 @@ test("empty table and a dealt hand keep a stable layout", async ({ page }) => {
   await expect(page.locator(".player-zone .card")).toHaveCount(2);
   await expect(page.locator("#message")).not.toContainText(/basic strategy|recommend/i);
   await expectHealthyGameLayout(page, "initial dealt hand");
+  await expect(page.locator(".controls")).toBeInViewport();
 });
 
 test("Blackjack session statistics persist and New Game resets them", async ({ page }) => {
@@ -177,7 +179,7 @@ test("a seed query replays the exact Blackjack deal", async ({ page }) => {
   expect(await dealLabels()).toEqual(firstDeal);
 });
 
-test("Blackjack restores wagers and active rounds, then supports Rebet & Deal", async ({
+test("Blackjack restores wagers and active rounds, then prefills the previous wager", async ({
   page,
 }) => {
   await page.goto("/blackjack/?seed=layout-replay-17");
@@ -201,9 +203,9 @@ test("Blackjack restores wagers and active rounds, then supports Rebet & Deal", 
 
   await clickEnabled(page, "#stand");
   await clickEnabled(page, "#next-hand");
-  await clickEnabled(page, "#blackjack-rebet");
   await expect(page.locator("#bet")).toHaveText("$25");
-  await expect(page.locator(".player-zone .card")).toHaveCount(2);
+  await expect(page.locator(".player-zone .card")).toHaveCount(0);
+  await expect(page.locator("#deal")).toBeEnabled();
 });
 
 test("an active Blackjack tab blocks stale writes from another tab", async ({ context, page }) => {

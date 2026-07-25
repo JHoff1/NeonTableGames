@@ -3,9 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "build": "node scripts/write-build-version.cjs && tsc --noEmit && vite build",
     "check": "npm run lint && npm run format:check",
-    "format": "prettier --write \"*.{js,cjs,json}\" \"scripts/*.cjs\" \"netlify/functions/*.cjs\" \"shared/*.js\" \"blackjack/*.js\" \"baccarat/*.js\" \"three-card-poker/*.js\" \"tests/**/*.cjs\"",
-    "format:check": "prettier --check \"*.{js,cjs,json}\" \"scripts/*.cjs\" \"netlify/functions/*.cjs\" \"shared/*.js\" \"blackjack/*.js\" \"baccarat/*.js\" \"three-card-poker/*.js\" \"tests/**/*.cjs\"",
+    "dev": "vite",
+    "format": "prettier --write \"*.{cjs,json,ts,mts}\" \"scripts/*.cjs\" \"netlify/functions/*.cjs\" \"shared/*.js\" \"blackjack/*.js\" \"baccarat/*.js\" \"three-card-poker/*.js\" \"src/**/*.{ts,tsx,css}\" \"tests/**/*.cjs\"",
+    "format:check": "prettier --check \"*.{cjs,json,ts,mts}\" \"scripts/*.cjs\" \"netlify/functions/*.cjs\" \"shared/*.js\" \"blackjack/*.js\" \"baccarat/*.js\" \"three-card-poker/*.js\" \"src/**/*.{ts,tsx,css}\" \"tests/**/*.cjs\"",
     "lint": "eslint .",
     "test": "npm run check && npm run test:unit && npm run test:visual",
     "test:unit": "node --test tests/unit/game-core.test.cjs tests/unit/game-settings.test.cjs tests/unit/session-framework.test.cjs tests/unit/error-monitoring.test.cjs tests/unit/blackjack-engine.test.cjs tests/unit/baccarat-engine.test.cjs tests/unit/baccarat-session.test.cjs tests/unit/three-card-poker-engine.test.cjs tests/unit/statistical-simulations.test.cjs",
@@ -13,15 +15,29 @@
     "test:visual:headed": "playwright test --headed",
     "test:visual:report": "playwright show-report",
     "test:production": "playwright test --config=playwright.production.config.cjs",
-    "test:performance": "lhci autorun"
+    "test:performance": "lhci autorun",
+    "preview": "vite preview"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",
     "@eslint/js": "^9.39.0",
     "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.61.1",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@typescript-eslint/eslint-plugin": "^8.38.0",
+    "@typescript-eslint/parser": "^8.38.0",
+    "@vitejs/plugin-react": "^4.3.4",
     "eslint": "^9.39.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
     "globals": "^17.7.0",
-    "prettier": "^3.9.6"
+    "prettier": "^3.9.6",
+    "typescript": "^5.8.3",
+    "vite": "^6.1.0"
+  },
+  "dependencies": {
+    "lucide-react": "^1.26.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
   }
 }

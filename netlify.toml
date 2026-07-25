@@ -1,5 +1,6 @@
 [build]
-  command = "node scripts/write-build-version.cjs"
+  command = "npm run build"
+  publish = "dist"
 
 [functions]
   directory = "netlify/functions"

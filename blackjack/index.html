@@ -6,7 +6,7 @@
     <title>Free Online Blackjack | Neon Table Games</title>
     <meta name="description" content="Play free online blackjack with Neon Table Games. Practice classic table rules, split pairs, double down, and play fast browser blackjack with no signup.">
     <meta name="robots" content="index, follow">
-    <meta name="theme-color" content="#0e5f49">
+    <meta name="theme-color" content="#07533f">
     <link rel="canonical" href="https://neontablegames.com/blackjack/">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any">
     <link rel="manifest" href="../site.webmanifest">
@@ -20,14 +20,11 @@
     <meta name="twitter:title" content="Free Online Blackjack | Neon Table Games">
     <meta name="twitter:description" content="Play free online blackjack in your browser with no signup.">
     <meta name="twitter:image" content="https://neontablegames.com/favicon.svg">
-    <link rel="stylesheet" href="../styles.css">
-    <link rel="stylesheet" href="../blackjack.css">
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-XKETCHHVRE"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-
       gtag('config', 'G-XKETCHHVRE');
     </script>
     <script type="application/ld+json">
@@ -57,144 +54,7 @@
     </script>
   </head>
   <body>
-    <main class="table-shell">
-      <header class="game-top" aria-label="Game status">
-        <div class="title-block">
-          <nav class="game-switcher" aria-label="Game navigation">
-            <a href="../index.html">All Games</a>
-            <a href="../blackjack-rules/index.html">Blackjack Rules</a>
-            <button id="blackjack-settings" type="button">Settings</button>
-          </nav>
-          <p class="eyebrow">Blackjack</p>
-          <h1><a class="title-home-link" href="../index.html">Neon Table Games</a></h1>
-          <p class="game-disclaimer">Free play-money blackjack. No real-money wagering, deposits, prizes, or cash-out.</p>
-          <button id="new-game" class="secondary top-reset" data-tooltip="Reset the table and restore your starting bankroll">NEW GAME</button>
-        </div>
-        <div class="top-status">
-          <div class="stats">
-            <div>
-              <span>Bankroll</span>
-              <strong id="bankroll">$1,000</strong>
-            </div>
-            <div>
-              <span>Bet</span>
-              <strong id="bet">$0</strong>
-            </div>
-            <div>
-              <span>Cards</span>
-              <strong id="shoe">52</strong>
-            </div>
-            <div class="best-run">
-              <span>Best Run</span>
-              <strong id="high-bankroll">$1,000</strong>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <section class="felt" aria-live="polite">
-        <div class="dealer-zone hand-zone">
-          <div class="zone-header">
-            <h2>Dealer</h2>
-            <span id="dealer-total" class="total">0</span>
-          </div>
-          <div id="dealer-hand" class="hand"></div>
-        </div>
-
-        <div class="message-row">
-          <div class="table-rules" aria-label="Table rules">
-            <span>Blackjack pays 3 to 2</span>
-            <span>Dealer hits soft 17</span>
-          </div>
-          <div id="table-bet-stack" class="table-bet-stack" aria-label="Wager on table"></div>
-          <p id="message">Place your bet to start a hand.</p>
-        </div>
-
-        <div class="player-zone hand-zone">
-          <div class="zone-header">
-            <h2 id="player-heading">Player</h2>
-            <span id="player-total" class="total">0</span>
-          </div>
-          <div id="player-hand" class="player-hands"></div>
-        </div>
-      </section>
-
-      <section class="controls" aria-label="Game controls">
-        <div class="chips" aria-label="Bet chips">
-          <button class="chip" data-chip="5" data-tooltip="Add $5 to your bet"><span class="chip-dollar">$</span>5</button>
-          <button class="chip" data-chip="25" data-tooltip="Add $25 to your bet"><span class="chip-dollar">$</span>25</button>
-          <button class="chip" data-chip="100" data-tooltip="Add $100 to your bet"><span class="chip-dollar">$</span>100</button>
-          <button class="chip" data-chip="500" data-tooltip="Add $500 to your bet"><span class="chip-dollar">$</span>500</button>
-        </div>
-        <div class="actions">
-          <button id="clear-bet" class="secondary" data-tooltip="Return your current bet to your bankroll">Clear</button>
-          <button id="blackjack-rebet" class="secondary" data-tooltip="Repeat the previous wager and immediately deal">Rebet &amp; Deal</button>
-          <button id="deal" class="primary" data-tooltip="Start a hand with your current bet">Deal</button>
-          <button id="split" data-tooltip="Split a matching pair into two hands">Split</button>
-          <button id="stand" data-tooltip="End your turn and let the dealer play">Stand</button>
-          <button id="hit" data-tooltip="Take one more card">Hit</button>
-          <button id="double" data-tooltip="Double your bet, take one card, then stand">Double</button>
-          <button id="next-hand" class="secondary" data-tooltip="Clear the table and keep your current bankroll">Next Hand</button>
-        </div>
-      </section>
-
-      <section class="game-session" aria-labelledby="blackjack-session-heading">
-        <div class="game-session-heading">
-          <h2 id="blackjack-session-heading">Session</h2>
-          <div class="session-actions">
-            <button id="blackjack-summary" class="secondary" data-tooltip="Review this Blackjack session">Summary</button>
-            <button id="blackjack-reset-session" class="secondary" data-tooltip="Restart the session counters">Reset Session</button>
-          </div>
-        </div>
-        <div class="game-session-stats">
-          <div><span>Rounds</span><strong id="blackjack-session-rounds">0</strong></div>
-          <div><span>Wins</span><strong id="blackjack-session-wins">0</strong></div>
-          <div><span>Losses</span><strong id="blackjack-session-losses">0</strong></div>
-          <div><span>Pushes</span><strong id="blackjack-session-pushes">0</strong></div>
-          <div><span>Blackjacks</span><strong id="blackjack-session-blackjacks">0</strong></div>
-          <div><span>Splits</span><strong id="blackjack-session-splits">0</strong></div>
-          <div><span>Peak</span><strong id="blackjack-session-peak">$1,000</strong></div>
-          <div><span>Profit/Loss</span><strong id="blackjack-session-profit">$0</strong></div>
-        </div>
-      </section>
-    </main>
-
-    <dialog id="blackjack-settings-dialog" class="game-dialog">
-      <form method="dialog">
-        <div class="dialog-heading">
-          <h2>Game Settings</h2>
-          <button value="cancel" class="dialog-close" aria-label="Close settings">&#215;</button>
-        </div>
-        <label class="setting-row">
-          <span><strong>Sound</strong><small>Play subtle card and result cues in every game.</small></span>
-          <input id="blackjack-setting-sound" type="checkbox">
-        </label>
-        <label class="setting-row">
-          <span><strong>Haptics</strong><small>Use brief vibration where supported.</small></span>
-          <input id="blackjack-setting-haptics" type="checkbox">
-        </label>
-        <button value="cancel" class="primary dialog-done">Done</button>
-      </form>
-    </dialog>
-
-    <dialog id="blackjack-summary-dialog" class="game-dialog session-summary-dialog">
-      <form method="dialog">
-        <div class="dialog-heading">
-          <h2>Session Summary</h2>
-          <button value="cancel" class="dialog-close" aria-label="Close session summary">&#215;</button>
-        </div>
-        <div id="blackjack-summary-content" class="session-summary-content"></div>
-        <button value="cancel" class="primary dialog-done">Done</button>
-      </form>
-    </dialog>
-
-    <script src="../shared/error-monitoring.js"></script>
-    <script src="../shared/game-core.js"></script>
-    <script src="../shared/game-settings.js"></script>
-    <script src="../shared/session-framework.js"></script>
-    <script src="../shared/tutorial-ui.js"></script>
-    <script src="../shared/blackjack-engine.js"></script>
-    <script src="tutorial-data.js"></script>
-    <script src="../script.js"></script>
+    <div id="blackjack-app"></div>
+    <script type="module" src="../src/blackjack/main.tsx"></script>
   </body>
 </html>

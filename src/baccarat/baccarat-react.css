@@ -1,0 +1,300 @@
+.baccarat-felt {
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(76px, 1fr) auto minmax(76px, 1fr);
+  gap: 4px;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  padding: 8px 10px;
+  border: 1px solid #2f8b72;
+  border-radius: 8px;
+  background: var(--felt);
+}
+
+.baccarat-felt::before {
+  position: absolute;
+  inset: 8% 8% 5%;
+  border: 2px solid rgb(240 199 94 / 42%);
+  border-radius: 50%;
+  content: "";
+  pointer-events: none;
+}
+
+.baccarat-hand-zone,
+.baccarat-center,
+.baccarat-tutorial {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+.baccarat-hand-zone {
+  display: grid;
+  grid-template-rows: 24px minmax(0, 1fr);
+}
+
+.baccarat-hand-heading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.baccarat-hand-heading h2 {
+  margin: 0;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+}
+
+.baccarat-hand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 0;
+}
+
+.baccarat-center {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(130px, 0.7fr);
+  align-items: center;
+  gap: 8px;
+  min-height: 58px;
+  padding: 4px 0;
+  border-top: 1px solid rgb(240 199 94 / 30%);
+  border-bottom: 1px solid rgb(240 199 94 / 30%);
+}
+
+.baccarat-result {
+  min-width: 92px;
+  padding: 6px;
+  border-left: 3px solid var(--accent);
+  background: rgb(3 34 26 / 72%);
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.baccarat-result.banker {
+  border-color: var(--danger);
+}
+
+.baccarat-result.tie {
+  border-color: var(--gold);
+}
+
+#baccarat-message {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.baccarat-history-wrap {
+  min-width: 0;
+}
+
+.road-tabs {
+  display: flex;
+}
+
+.road-tabs button {
+  min-height: 24px;
+  padding: 2px 7px;
+  border: 0;
+  background: transparent;
+  font-size: 0.58rem;
+}
+
+.road-tabs button[aria-selected="true"] {
+  color: var(--accent);
+  border-bottom: 2px solid var(--accent);
+}
+
+.baccarat-history,
+.baccarat-big-road {
+  display: grid;
+  grid-template-rows: repeat(3, 13px);
+  grid-auto-flow: column;
+  grid-auto-columns: 13px;
+  gap: 3px;
+  min-height: 47px;
+  overflow-x: auto;
+}
+
+.baccarat-big-road {
+  grid-template-rows: repeat(3, 15px);
+  grid-auto-columns: 15px;
+}
+
+.history-marker,
+.big-road-marker {
+  display: grid;
+  width: 13px;
+  height: 13px;
+  border: 2px solid #64a9ff;
+  border-radius: 50%;
+  color: #64a9ff;
+  font-size: 0.42rem;
+  font-weight: 900;
+  place-items: center;
+}
+
+.big-road-marker {
+  position: relative;
+  width: 15px;
+  height: 15px;
+}
+
+.history-marker.banker,
+.big-road-marker.banker {
+  color: #ff8589;
+  border-color: #ff8589;
+}
+
+.history-marker.tie {
+  color: var(--gold);
+  border-color: var(--gold);
+}
+
+.big-road-marker small {
+  position: absolute;
+  right: -4px;
+  bottom: -5px;
+  color: var(--gold);
+  font-size: 0.45rem;
+}
+
+.baccarat-controls {
+  grid-template-columns: minmax(230px, 0.7fr) minmax(0, 1fr);
+}
+
+.bet-targets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.bet-target {
+  display: grid;
+  min-height: 48px;
+  padding: 4px 7px;
+  text-transform: capitalize;
+}
+
+.bet-target strong {
+  color: var(--muted);
+  font-size: 0.58rem;
+}
+
+.bet-target[aria-pressed="true"] {
+  border-color: var(--accent);
+  box-shadow: inset 3px 0 var(--accent);
+}
+
+.tie-bet[aria-pressed="true"] {
+  border-color: var(--gold);
+  box-shadow: inset 3px 0 var(--gold);
+}
+
+.banker-bet[aria-pressed="true"] {
+  border-color: var(--danger);
+  box-shadow: inset 3px 0 var(--danger);
+}
+
+.wager-action-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+}
+
+.baccarat-tutorial {
+  grid-row: 1;
+}
+
+.baccarat-felt.tutorial-active {
+  grid-template-rows: auto minmax(60px, 1fr) auto minmax(60px, 1fr);
+}
+
+.baccarat-felt.tutorial-active .banker-side {
+  grid-row: 2;
+}
+
+.baccarat-felt.tutorial-active .baccarat-center {
+  grid-row: 3;
+}
+
+.baccarat-felt.tutorial-active .player-side {
+  grid-row: 4;
+}
+
+.baccarat-felt.tutorial-active .baccarat-history-wrap {
+  display: none;
+}
+
+.baccarat-controls .actions {
+  grid-template-columns: repeat(2, minmax(80px, 1fr));
+}
+
+.baccarat-controls .actions .phase-primary {
+  grid-column: 2;
+}
+
+@media (max-width: 720px) {
+  .baccarat-felt {
+    grid-template-rows: minmax(68px, 1fr) auto minmax(68px, 1fr);
+    padding: 6px;
+  }
+
+  .baccarat-center {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 76px;
+  }
+
+  #baccarat-message {
+    min-height: 26px;
+    padding-left: 96px;
+    font-size: 0.62rem;
+  }
+
+  .baccarat-result {
+    position: absolute;
+    top: 4px;
+    left: 0;
+    width: 88px;
+  }
+
+  .baccarat-history-wrap {
+    grid-column: 1;
+  }
+
+  .baccarat-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .bet-target {
+    min-height: 38px;
+    font-size: 0.7rem;
+  }
+
+  .wager-action-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .baccarat-felt.tutorial-active .baccarat-center {
+    min-height: 42px;
+  }
+
+  .baccarat-felt.tutorial-active .tutorial-overlay {
+    max-height: 100px;
+  }
+}
+
+@media (max-height: 760px) and (max-width: 720px) {
+  .baccarat-felt {
+    grid-template-rows: minmax(60px, 1fr) 48px minmax(60px, 1fr);
+  }
+}

@@ -4,54 +4,37 @@ A static table games site from Neon Table Games with Blackjack, Mini Baccarat, a
 
 ## Run Locally
 
-Open `index.html` in a browser, or serve this folder with any static server.
+Install dependencies, then start Vite:
+
+```powershell
+npm install
+npm run dev
+```
+
+Create and preview the production output:
+
+```powershell
+npm run build
+npm run preview
+```
 
 ## Host
 
-Upload these files to a static host such as GitHub Pages, Netlify, Vercel, Cloudflare Pages, or an S3/static website bucket:
-
-- `index.html`
-- `blackjack/index.html`
-- `blackjack/tutorial-data.js`
-- `blackjack-rules/index.html`
-- `baccarat/index.html`
-- `baccarat/session.js`
-- `baccarat/tutorial-data.js`
-- `baccarat-rules/index.html`
-- `three-card-poker/index.html`
-- `three-card-poker/tutorial-data.js`
-- `three-card-poker-rules/index.html`
-- `shared/game-core.js`
-- `shared/error-monitoring.js`
-- `shared/game-settings.js`
-- `shared/session-framework.js`
-- `shared/tutorial-ui.js`
-- `shared/blackjack-engine.js`
-- `shared/baccarat-engine.js`
-- `shared/three-card-poker-engine.js`
-- `blackjack.css`
-- `baccarat.js`
-- `baccarat.css`
-- `three-card-poker.js`
-- `three-card-poker.css`
-- `rules.css`
-- `styles.css`
-- `script.js`
-- `favicon.svg`
-- `site.webmanifest`
-- `robots.txt`
-- `sitemap.xml`
-- `_redirects`
-- `_headers`
-- `netlify.toml`
+Netlify runs `npm run build` and publishes `dist`. Pushes to the configured production branch
+continue to deploy automatically. Other static hosts should also run the Vite build and publish
+the generated `dist` directory.
 
 ## Gameplay
 
-Blackjack includes betting chips, dealer/player hands, 3 to 2 payouts, hit, stand, double down, split pairs, push handling, Rebet & Deal, unfinished-round recovery, automatic deck refresh, and persistent session statistics.
+All three game routes use a shared React, TypeScript, and Vite shell. Blackjack includes betting chips, dealer/player
+hands, 3 to 2 payouts, hit, stand, double down, split pairs, push handling, unfinished-round
+recovery, automatic previous-wager selection after Next Hand, automatic deck refresh, persistent
+session statistics, and a guided tutorial. Its scoring and payouts continue to use the existing
+shared Blackjack engine.
 
-Mini Baccarat includes Player, Banker, and Tie bets, Rebet & Deal, standard third-card rules, 5% Banker commission, cut-card shoe status, sequential dealing, automatic Banker reveals, optional automatic Player reveals, Bead Plate and Big Road views, unfinished-round recovery, persistent session statistics, session summaries, and a guided tutorial. Sound and haptic preferences are shared with Blackjack.
+Mini Baccarat includes Player, Banker, and Tie bets, standard third-card rules, 5% Banker commission, cut-card shoe status, sequential dealing, automatic Banker reveals, optional automatic Player reveals, Bead Plate and Big Road views, unfinished-round recovery, automatic previous-wager selection after Next Round, persistent session statistics, session summaries, and a guided tutorial.
 
-Three Card Poker includes Ante and Play wagers, optional Pair Plus, contextual Q-6-4 strategy guidance, sequential dealing and Dealer reveals, optional tap-to-reveal Player cards, visible felt wagers, dealer qualification, Ante Bonus and Pair Plus paytables, Rebet & Deal, unfinished-round recovery, persistent session statistics, a session summary, and a deterministic tutorial.
+Three Card Poker includes Ante and Play wagers, optional Pair Plus, tutorial-only Q-6-4 strategy guidance, sequential dealing and Dealer reveals, optional tap-to-reveal Player cards, visible felt wagers, dealer qualification, Ante Bonus and Pair Plus paytables, unfinished-round recovery, automatic previous-wager selection after Next Round, persistent session statistics, a session summary, and a deterministic tutorial.
 
 Add a `seed` query parameter to any game URL to replay its card sequence during debugging, for example `/blackjack/?seed=failed-test-42`. Seeded pages show a debug badge with a copy button.
 

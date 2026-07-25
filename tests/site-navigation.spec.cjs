@@ -38,7 +38,7 @@ test("game pages share the same header structure", async ({ page }) => {
     await expect(page.locator("header.game-top")).toHaveCount(1);
     await expect(page.locator(".game-top .title-block")).toHaveCount(1);
     await expect(page.locator(".game-top .game-switcher")).toHaveCount(1);
-    await expect(page.locator(".game-top .top-status .stats")).toHaveCount(1);
+    await expect(page.locator(".top-status .stats")).toHaveCount(1);
     await expect(page.locator(".game-top .top-reset")).toHaveCount(1);
   }
 });
