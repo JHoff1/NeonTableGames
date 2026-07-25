@@ -4,3 +4,9 @@
 
 [functions]
   directory = "netlify/functions"
+
+[[headers]]
+  for = "/deployment-version.json"
+
+  [headers.values]
+    Cache-Control = "no-store"
