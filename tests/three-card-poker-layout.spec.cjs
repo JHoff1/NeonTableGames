@@ -94,7 +94,8 @@ test("Three Card Poker supports Play, recovery, Rebet, and Fold", async ({ page 
   await clickEnabled(page, "#poker-deal");
   await expect(page.locator("#poker-message")).toContainText("Dealing");
   await expect(page.locator("#poker-session-profit")).toHaveText("$0");
-  await expect(page.locator("#poker-message")).toContainText("Basic strategy:");
+  await expect(page.locator("#poker-message")).toContainText("Choose Play or Fold.");
+  await expect(page.locator("#poker-message")).not.toContainText("Basic strategy");
   await expect(page.locator("#poker-player-hand .card")).toHaveCount(3);
   await expect(page.locator("#poker-dealer-hand .card.back")).toHaveCount(3);
   await expectHealthyPokerLayout(page, "dealt poker table");
@@ -153,7 +154,8 @@ test("Player cards can be revealed manually when automatic reveal is disabled", 
   await page.locator("#poker-player-hand .reveal-card").first().click();
   await page.locator("#poker-player-hand .reveal-card").first().click();
   await expect(page.locator("#poker-player-hand .reveal-card")).toHaveCount(0);
-  await expect(page.locator("#poker-message")).toContainText("Basic strategy:");
+  await expect(page.locator("#poker-message")).toContainText("Choose Play or Fold.");
+  await expect(page.locator("#poker-message")).not.toContainText("Basic strategy");
   await expect(page.locator("#poker-play")).toBeEnabled();
 });
 

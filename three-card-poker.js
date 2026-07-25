@@ -321,11 +321,13 @@ function finishPokerPlayerReveal() {
     return;
   }
   const playerRank = pokerEngine.rankHand(pokerState.playerCards).name;
-  const decision = pokerEngine.shouldPlay(pokerState.playerCards) ? "Play" : "Fold";
-  pokerState.message = `${playerRank}. ${pokerEngine.strategyReason(pokerState.playerCards)} Basic strategy: ${decision}.`;
   if (pokerState.tutorial.active) {
+    const decision = pokerEngine.shouldPlay(pokerState.playerCards) ? "Play" : "Fold";
+    pokerState.message = `${playerRank}. ${pokerEngine.strategyReason(pokerState.playerCards)} Basic strategy: ${decision}.`;
     const tutorialRound = pokerTutorialRounds[pokerState.tutorial.index];
     pokerState.tutorial.instruction = `${tutorialRound.intro}\nChoose ${tutorialRound.action === "play" ? "Play" : "Fold"} to continue.`;
+  } else {
+    pokerState.message = `${playerRank}. Choose Play or Fold.`;
   }
   savePoker();
   renderPoker();

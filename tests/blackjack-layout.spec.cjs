@@ -135,6 +135,7 @@ test("empty table and a dealt hand keep a stable layout", async ({ page }) => {
   await clickEnabled(page, "#deal");
   await expect(page.locator(".dealer-zone .card")).toHaveCount(2);
   await expect(page.locator(".player-zone .card")).toHaveCount(2);
+  await expect(page.locator("#message")).not.toContainText(/basic strategy|recommend/i);
   await expectHealthyGameLayout(page, "initial dealt hand");
 });
 

@@ -130,6 +130,7 @@ test("Baccarat betting and settlement keep a stable layout", async ({ page }) =>
   await expect(page.locator("#baccarat-result")).toBeHidden();
   await revealAllBaccaratCards(page);
   await expect(page.locator("#baccarat-result")).toBeVisible();
+  await expect(page.locator("#baccarat-message")).not.toContainText(/basic strategy|recommend/i);
   await expect(page.locator("#session-rounds")).toHaveText("1");
   await expect(page.locator(".history-marker")).toHaveCount(1);
   const dealtCardCount = await page.locator(".baccarat-hand .card").count();
