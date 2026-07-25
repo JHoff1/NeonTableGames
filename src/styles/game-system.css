@@ -547,6 +547,83 @@ a {
   text-transform: uppercase;
 }
 
+@media (min-width: 900px) and (min-height: 850px) {
+  .game-viewport {
+    width: min(1440px, 100%);
+    gap: 10px;
+    padding: max(12px, env(safe-area-inset-top)) 16px max(12px, env(safe-area-inset-bottom));
+  }
+
+  .game-switcher {
+    min-height: 34px;
+    gap: 12px;
+  }
+
+  .game-switcher a,
+  .game-switcher button {
+    min-height: 34px;
+    padding: 5px 9px;
+    font-size: 0.88rem;
+  }
+
+  .eyebrow {
+    font-size: 0.82rem;
+  }
+
+  .game-title-row h1 {
+    font-size: 2.35rem;
+  }
+
+  .top-reset {
+    min-height: 46px;
+    padding: 8px 15px;
+    font-size: 0.92rem;
+  }
+
+  .stats {
+    gap: 8px;
+  }
+
+  .stats > div {
+    min-height: 58px;
+    padding: 8px 11px;
+  }
+
+  .stats span {
+    font-size: 0.74rem;
+  }
+
+  .stats strong {
+    font-size: 1.22rem;
+  }
+
+  .controls {
+    gap: 14px;
+    padding: 10px;
+  }
+
+  .chips {
+    grid-template-columns: repeat(4, 62px);
+    gap: 8px;
+  }
+
+  .chip {
+    width: 62px;
+    height: 62px;
+    min-height: 62px;
+    font-size: 0.94rem;
+  }
+
+  .actions {
+    gap: 8px;
+  }
+
+  .actions button {
+    min-height: 52px;
+    font-size: 0.96rem;
+  }
+}
+
 @media (max-width: 720px) {
   .game-viewport {
     gap: 6px;

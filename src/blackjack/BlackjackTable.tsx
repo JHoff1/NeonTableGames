@@ -95,15 +95,17 @@ export function BlackjackTable({
             />
           ))}
         </div>
-      </div>
-
-      <div className="message-row">
         <div className="table-rules" aria-label="Table rules">
           <span>Blackjack pays 3 to 2</span>
           <span>Dealer hits soft 17</span>
         </div>
-        {hands.length === 0 && <ChipStack chips={betChips} />}
-        <p id="message">{message}</p>
+      </div>
+
+      <div className="message-row">
+        <div className="table-message-overlay">
+          {hands.length === 0 && <ChipStack chips={betChips} />}
+          <p id="message">{message}</p>
+        </div>
       </div>
 
       <div className={`player-zone hand-zone ${hands.length > 1 ? "has-split-hands" : ""}`}>
