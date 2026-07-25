@@ -1,0 +1,55 @@
+name: Production smoke tests
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 10 * * *"
+  workflow_run:
+    workflows:
+      - Playwright layout tests
+    types:
+      - completed
+
+jobs:
+  production:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Check out deployed revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Wait for the matching Netlify revision
+        if: github.event_name == 'workflow_run'
+        env:
+          EXPECTED_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          for attempt in {1..40}; do
+            deployed="$(curl --fail --silent --show-error https://neontablegames.com/deployment-version.json || true)"
+            if printf '%s' "$deployed" | grep --fixed-strings --quiet "$EXPECTED_SHA"; then
+              echo "Production is serving $EXPECTED_SHA"
+              exit 0
+            fi
+            echo "Waiting for Netlify revision $EXPECTED_SHA ($attempt/40)"
+            sleep 10
+          done
+          echo "Timed out waiting for Netlify revision $EXPECTED_SHA"
+          exit 1
+
+      - name: Verify production
+        run: npm run test:production

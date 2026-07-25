@@ -3,6 +3,7 @@ const { defineConfig } = require("@playwright/test");
 module.exports = defineConfig({
   testDir: "./tests",
   testMatch: "**/*.spec.cjs",
+  testIgnore: "**/production-smoke.spec.cjs",
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
@@ -34,6 +35,14 @@ module.exports = defineConfig({
     {
       name: "desktop",
       use: { viewport: { width: 1366, height: 768 } },
+    },
+    {
+      name: "firefox-desktop",
+      use: { browserName: "firefox", viewport: { width: 1366, height: 768 } },
+    },
+    {
+      name: "webkit-mobile",
+      use: { browserName: "webkit", viewport: { width: 390, height: 844 } },
     },
   ],
 });

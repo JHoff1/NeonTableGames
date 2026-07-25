@@ -81,6 +81,7 @@
             <div>
               <span>Shoe</span>
               <strong id="baccarat-shoe">416</strong>
+              <small id="baccarat-shoe-status">8 decks &middot; Fresh shoe</small>
             </div>
             <div>
               <span>Best Run</span>
@@ -105,8 +106,12 @@
           <div id="baccarat-result" class="baccarat-result" hidden></div>
           <p id="baccarat-message">Choose Player, Banker, or Tie, then place a bet.</p>
           <div class="baccarat-history-wrap">
-            <span>History</span>
-            <div id="baccarat-history" class="baccarat-history" role="list" aria-label="Previous round results"></div>
+            <div class="road-tabs" role="tablist" aria-label="Baccarat roads">
+              <button id="bead-tab" role="tab" aria-selected="true" aria-controls="baccarat-history">Bead Plate</button>
+              <button id="big-road-tab" role="tab" aria-selected="false" aria-controls="baccarat-big-road" tabindex="-1">Big Road</button>
+            </div>
+            <div id="baccarat-history" class="baccarat-history" role="tabpanel" aria-labelledby="bead-tab" tabindex="0"></div>
+            <div id="baccarat-big-road" class="baccarat-big-road" role="tabpanel" aria-labelledby="big-road-tab" tabindex="0" hidden></div>
           </div>
         </section>
 
@@ -145,15 +150,75 @@
 
           <div class="baccarat-actions">
             <button id="baccarat-clear" class="secondary" data-tooltip="Return the current bet to your bankroll">Clear</button>
+            <button id="baccarat-rebet" class="secondary" data-tooltip="Repeat the previous wager and immediately deal">Rebet &amp; Deal</button>
             <button id="baccarat-deal" class="primary" data-tooltip="Deal the selected Baccarat bet">Deal</button>
             <button id="baccarat-next" class="secondary" data-tooltip="Clear the table and prepare the next round">Next Round</button>
           </div>
         </div>
       </section>
+
+      <section class="game-session" aria-labelledby="baccarat-session-heading">
+        <div class="game-session-heading">
+          <h2 id="baccarat-session-heading">Session</h2>
+          <div class="session-actions">
+            <button id="baccarat-settings" class="secondary" data-tooltip="Change reveal, sound, and haptic preferences">Settings</button>
+            <button id="baccarat-summary" class="secondary" data-tooltip="Review this session">Summary</button>
+            <button id="baccarat-reset-session" class="secondary" data-tooltip="Clear the roads and restart session statistics">Reset Session</button>
+          </div>
+        </div>
+        <div class="game-session-stats session-columns-7">
+          <div><span>Rounds</span><strong id="session-rounds">0</strong></div>
+          <div><span>Player</span><strong id="session-player-wins">0</strong></div>
+          <div><span>Banker</span><strong id="session-banker-wins">0</strong></div>
+          <div><span>Ties</span><strong id="session-ties">0</strong></div>
+          <div><span>Streak</span><strong id="session-streak">-</strong></div>
+          <div><span>Peak</span><strong id="session-peak">$1,000</strong></div>
+          <div><span>Profit/Loss</span><strong id="session-profit">$0</strong></div>
+        </div>
+      </section>
     </main>
 
+    <dialog id="baccarat-settings-dialog" class="game-dialog">
+      <form method="dialog">
+        <div class="dialog-heading">
+          <h2>Game Settings</h2>
+          <button value="cancel" class="dialog-close" aria-label="Close settings">&#215;</button>
+        </div>
+        <label class="setting-row">
+          <span><strong>Auto-reveal Player cards</strong><small>Finish each round without tapping the cards.</small></span>
+          <input id="setting-auto-reveal" type="checkbox">
+        </label>
+        <label class="setting-row">
+          <span><strong>Sound</strong><small>Play subtle deal and result cues.</small></span>
+          <input id="setting-sound" type="checkbox">
+        </label>
+        <label class="setting-row">
+          <span><strong>Haptics</strong><small>Use brief vibration where supported.</small></span>
+          <input id="setting-haptics" type="checkbox">
+        </label>
+        <button value="cancel" class="primary dialog-done">Done</button>
+      </form>
+    </dialog>
+
+    <dialog id="baccarat-summary-dialog" class="game-dialog session-summary-dialog">
+      <form method="dialog">
+        <div class="dialog-heading">
+          <h2>Session Summary</h2>
+          <button value="cancel" class="dialog-close" aria-label="Close session summary">&#215;</button>
+        </div>
+        <div id="session-summary-content" class="session-summary-content"></div>
+        <button value="cancel" class="primary dialog-done">Done</button>
+      </form>
+    </dialog>
+
+    <script src="../shared/error-monitoring.js"></script>
     <script src="../shared/game-core.js"></script>
+    <script src="../shared/game-settings.js"></script>
+    <script src="../shared/session-framework.js"></script>
+    <script src="../shared/tutorial-ui.js"></script>
     <script src="../shared/baccarat-engine.js"></script>
+    <script src="session.js"></script>
+    <script src="../baccarat/tutorial-data.js"></script>
     <script src="../baccarat.js"></script>
   </body>
 </html>

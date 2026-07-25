@@ -1,16 +1,92 @@
 const gameCore = window.NeonTableCore;
 const blackjackEngine = window.NeonBlackjackEngine;
 const GAME_PHASES = gameCore.phases;
+const blackjackSettingsStore = window.NeonTableSettings.createSettings();
+const blackjackFeedback = window.NeonTableSettings.createFeedback(blackjackSettingsStore);
+const blackjackSessions = window.NeonSessionFramework;
+const buildBlackjackShoe = gameCore.createShoeBuilder(1, "blackjack");
 
 const highBankrollKey = "neontablegamesHighBankroll";
 const legacyHighBankrollKey = "blackjackHighBankroll";
 const bankrollKey = "neontablegamesBankroll";
 const startingBankroll = 1000;
+const blackjackSessionCounters = ["blackjacks", "losses", "pushes", "rounds", "splits", "wins"];
+
+function emptyBlackjackSession(bankroll = startingBankroll) {
+  return blackjackSessions.create({ bankroll, counters: blackjackSessionCounters });
+}
+
+function sanitizeBlackjackCard(card) {
+  try {
+    return gameCore.createCard(card?.label, card?.suitName, "blackjack");
+  } catch {
+    return null;
+  }
+}
+
+function sanitizeBlackjackWager(value) {
+  const amount = Number(value);
+  return Number.isFinite(amount) && amount > 0 ? amount : null;
+}
+
+function sanitizeBlackjackSnapshot(snapshot) {
+  if (!snapshot || typeof snapshot !== "object") return null;
+  const bankroll = Number(snapshot.bankroll);
+  const bet = Number(snapshot.bet);
+  const dealer = Array.isArray(snapshot.dealer)
+    ? snapshot.dealer.map(sanitizeBlackjackCard).filter(Boolean)
+    : [];
+  const deck = Array.isArray(snapshot.deck)
+    ? snapshot.deck.map(sanitizeBlackjackCard).filter(Boolean)
+    : [];
+  const hands = Array.isArray(snapshot.hands)
+    ? snapshot.hands
+        .map((hand) => {
+          const cards = Array.isArray(hand?.cards)
+            ? hand.cards.map(sanitizeBlackjackCard).filter(Boolean)
+            : [];
+          const handBet = Number(hand?.bet);
+          if (cards.length < 2 || !Number.isFinite(handBet) || handBet <= 0) return null;
+          return {
+            bet: handBet,
+            cards,
+            result: typeof hand.result === "string" ? hand.result : "",
+            status: ["playing", "waiting", "stood", "bust"].includes(hand.status)
+              ? hand.status
+              : "playing",
+            wasSplit: Boolean(hand.wasSplit),
+          };
+        })
+        .filter(Boolean)
+    : [];
+  const phase = snapshot.phase === GAME_PHASES.PLAYING ? GAME_PHASES.PLAYING : GAME_PHASES.BETTING;
+  const validPlaying = phase === GAME_PHASES.PLAYING && hands.length > 0 && dealer.length >= 2;
+  const validBetting = phase === GAME_PHASES.BETTING && Number.isFinite(bet) && bet > 0;
+  if (!Number.isFinite(bankroll) || bankroll < 0 || (!validPlaying && !validBetting)) return null;
+  return {
+    activeHand: Math.min(
+      Math.max(Number(snapshot.activeHand) || 0, 0),
+      Math.max(hands.length - 1, 0),
+    ),
+    bankroll,
+    bet: validBetting ? bet : 0,
+    betChips: Array.isArray(snapshot.betChips)
+      ? snapshot.betChips.map(Number).filter((chip) => Number.isFinite(chip) && chip > 0)
+      : [],
+    dealer,
+    deck,
+    hands,
+    phase,
+  };
+}
 
 const blackjackStorage = gameCore.createGameStorage("neontablegames.blackjack", {
   defaults: {
     bankroll: startingBankroll,
     highBankroll: startingBankroll,
+    lastWager: null,
+    session: emptyBlackjackSession(),
+    snapshot: null,
   },
   migrate(storage) {
     const legacyHighBankroll = gameCore.readStoredNumber(legacyHighBankrollKey, startingBankroll, {
@@ -22,6 +98,11 @@ const blackjackStorage = gameCore.createGameStorage("neontablegames.blackjack", 
         startingBankroll,
         gameCore.readStoredNumber(highBankrollKey, legacyHighBankroll, { storage }),
       ),
+      lastWager: null,
+      session: emptyBlackjackSession(
+        gameCore.readStoredNumber(bankrollKey, startingBankroll, { storage }),
+      ),
+      snapshot: null,
     };
   },
   sanitize(value) {
@@ -33,24 +114,37 @@ const blackjackStorage = gameCore.createGameStorage("neontablegames.blackjack", 
         Number.isFinite(highBankroll) && highBankroll >= startingBankroll
           ? highBankroll
           : startingBankroll,
+      lastWager: sanitizeBlackjackWager(value.lastWager),
+      session: blackjackSessions.sanitize(value.session, {
+        bankroll: Number.isFinite(bankroll) && bankroll >= 0 ? bankroll : startingBankroll,
+        counters: blackjackSessionCounters,
+      }),
+      snapshot: sanitizeBlackjackSnapshot(value.snapshot),
     };
   },
 });
 
 const savedBlackjack = blackjackStorage.read();
+const savedBlackjackSnapshot = savedBlackjack.snapshot;
 
 const state = {
-  bankroll: savedBlackjack.bankroll,
+  bankroll: savedBlackjackSnapshot?.bankroll ?? savedBlackjack.bankroll,
   highBankroll: savedBlackjack.highBankroll,
-  bet: 0,
-  betChips: [],
-  deck: [],
-  hands: [],
-  activeHand: 0,
-  dealer: [],
-  phase: GAME_PHASES.BETTING,
+  session: savedBlackjack.session,
+  lastWager: savedBlackjack.lastWager,
+  bet: savedBlackjackSnapshot?.bet || 0,
+  betChips: savedBlackjackSnapshot?.betChips || [],
+  deck: savedBlackjackSnapshot?.deck || [],
+  hands: savedBlackjackSnapshot?.hands || [],
+  activeHand: savedBlackjackSnapshot?.activeHand || 0,
+  dealer: savedBlackjackSnapshot?.dealer || [],
+  phase: savedBlackjackSnapshot?.phase || GAME_PHASES.BETTING,
   revealDealer: false,
-  message: "Place your bet to start a hand.",
+  message: savedBlackjackSnapshot
+    ? savedBlackjackSnapshot.phase === GAME_PHASES.PLAYING
+      ? "Round restored. Continue your active hand."
+      : "Wager restored. Deal when ready."
+    : "Place your bet to start a hand.",
   tutorial: {
     active: false,
     handIndex: 0,
@@ -85,138 +179,35 @@ const els = {
   split: document.querySelector("#split"),
   newGame: document.querySelector("#new-game"),
   nextHand: document.querySelector("#next-hand"),
+  rebet: document.querySelector("#blackjack-rebet"),
+  settings: document.querySelector("#blackjack-settings"),
+  settingsDialog: document.querySelector("#blackjack-settings-dialog"),
+  settingHaptics: document.querySelector("#blackjack-setting-haptics"),
+  settingSound: document.querySelector("#blackjack-setting-sound"),
+  resetSession: document.querySelector("#blackjack-reset-session"),
+  sessionBlackjacks: document.querySelector("#blackjack-session-blackjacks"),
+  sessionLosses: document.querySelector("#blackjack-session-losses"),
+  sessionPeak: document.querySelector("#blackjack-session-peak"),
+  sessionProfit: document.querySelector("#blackjack-session-profit"),
+  sessionPushes: document.querySelector("#blackjack-session-pushes"),
+  sessionRounds: document.querySelector("#blackjack-session-rounds"),
+  sessionSplits: document.querySelector("#blackjack-session-splits"),
+  sessionWins: document.querySelector("#blackjack-session-wins"),
+  summary: document.querySelector("#blackjack-summary"),
+  summaryContent: document.querySelector("#blackjack-summary-content"),
+  summaryDialog: document.querySelector("#blackjack-summary-dialog"),
   chips: [...document.querySelectorAll("[data-chip]")],
   tutorialOverlay: null,
-  tooltip: null,
 };
 
-// Tutorial scenarios are deterministic mini-hands. Cards are ordered as:
-// player card 1, dealer upcard, player card 2, dealer hole card, then hit cards.
-const tutorialHands = [
-  {
-    instruction:
-      "You have 13. The dealer shows a weak 5. Basic strategy says: Stand here and let the dealer take the risk of busting.",
-    allowedAction: "stand",
-    deck: [
-      card("10", "hearts"),
-      card("5", "clubs"),
-      card("3", "spades"),
-      card("10", "diamonds"),
-      card("J", "clubs"),
-    ],
-    resultInstruction:
-      "Result: you win. You stood on 13 because the dealer showed a weak 5. The dealer had 15, had to hit, drew a 10-value card, and busted.",
-  },
-  {
-    instruction:
-      "You have an Ace and a 2. This is a 'Soft 13' because the Ace can count as 1 or 11. You cannot bust by hitting. Let's take a card.",
-    allowedAction: "hit",
-    deck: [
-      card("A", "spades"),
-      card("6", "clubs"),
-      card("2", "hearts"),
-      card("10", "diamonds"),
-      card("8", "clubs"),
-      card("2", "spades"),
-    ],
-    afterHitInstruction:
-      "Perfect! If your first two cards had totaled a hard 11 instead of a soft 13, you would have seen a 'Double Down' option. This lets you double your bet in exchange for exactly ONE more card--the ultimate offensive move when the dealer shows a weak card like a 6.",
-    resultInstruction:
-      "Result: you win. Your hit turned soft 13 into 21. The dealer finished at 18, so your 21 beat the dealer without needing blackjack.",
-  },
-  {
-    instruction:
-      "A pair of 8s totals 16--notoriously the worst starting hand in Blackjack. Standing usually loses, and hitting will likely bust you. Because you have a pair, your secret weapon is 'Splitting'. This separates them into two hands, turning a bad situation into two offensive positions.",
-    allowedAction: "split",
-    deck: [
-      card("8", "hearts"),
-      card("7", "clubs"),
-      card("8", "spades"),
-      card("10", "diamonds"),
-      card("10", "clubs"),
-      card("9", "hearts"),
-    ],
-    afterSplitInstruction:
-      "Great split. Hand 1 is now 18, a strong total against the dealer's 7. Stand and move to Hand 2.",
-    secondHandInstruction:
-      "Hand 2 is 17. It is not flashy, but it is much better than playing one hard 16. Stand and let the dealer resolve the hand.",
-    resultInstruction:
-      "Result: Hand 1 wins and Hand 2 pushes. The dealer finished at 17. Your first split hand had 18, so it won. Your second split hand also had 17, so that hand tied the dealer and your bet was returned.",
-  },
-  {
-    instruction:
-      "You have hard 11 against a dealer 6. This is one of the clearest attacking spots in blackjack. Double down to double your bet and take exactly one more card.",
-    allowedAction: "double",
-    deck: [
-      card("6", "hearts"),
-      card("6", "clubs"),
-      card("5", "spades"),
-      card("10", "diamonds"),
-      card("K", "clubs"),
-      card("5", "hearts"),
-    ],
-    resultInstruction:
-      "Result: push. Doubling on 11 was still the right play, but the dealer drew to 21 too. A push returns the doubled bet instead of winning or losing it.",
-  },
-  {
-    instruction:
-      "You have hard 16 against a dealer 10. It feels uncomfortable, but the dealer is showing strength. Basic strategy says to hit because standing loses too often.",
-    allowedAction: "hit",
-    deck: [
-      card("10", "hearts"),
-      card("10", "clubs"),
-      card("6", "spades"),
-      card("7", "diamonds"),
-      card("3", "clubs"),
-    ],
-    afterHitInstruction:
-      "Nice. You improved hard 16 to 19. Stand and make the dealer finish the hand.",
-    resultInstruction:
-      "Result: you win. Hitting hard 16 was risky, but standing against a dealer 10 loses too often. The hit made 19, which beat the dealer's 17.",
-  },
-  {
-    instruction:
-      "You have soft 18 against a dealer 9. Soft 18 looks strong, but against a strong dealer upcard it often needs improvement. Hit because the ace protects you from busting.",
-    allowedAction: "hit",
-    deck: [
-      card("A", "spades"),
-      card("9", "clubs"),
-      card("7", "hearts"),
-      card("7", "diamonds"),
-      card("2", "clubs"),
-      card("10", "spades"),
-    ],
-    afterHitInstruction:
-      "Good hit. Soft 18 became soft 20. Stand and let the dealer play out the hand.",
-    resultInstruction:
-      "Result: you win. Soft 18 improved to soft 20, and the dealer busted while trying to draw from 16.",
-  },
-  {
-    instruction:
-      "You have two 10-value cards for a total of 20. Even against a weak dealer 6, do not split 10s. A made 20 is already one of the best hands you can have.",
-    allowedAction: "stand",
-    deck: [
-      card("10", "hearts"),
-      card("6", "clubs"),
-      card("K", "spades"),
-      card("10", "diamonds"),
-      card("Q", "clubs"),
-    ],
-    resultInstruction:
-      "Result: you win. You kept the made 20 instead of splitting 10s. The dealer busted from 16, and your strong hand was paid.",
-  },
-];
+const tutorialHands = window.NeonBlackjackTutorials;
 
 function money(value) {
   return gameCore.money(value);
 }
 
-function card(label, suitName) {
-  return gameCore.createCard(label, suitName, "blackjack");
-}
-
 function buildDeck() {
-  return gameCore.buildShoe(1, "blackjack");
+  return buildBlackjackShoe();
 }
 
 function drawCard() {
@@ -235,9 +226,25 @@ const { handLabel, handValue } = blackjackEngine;
 
 function saveBankroll() {
   if (state.tutorial.active) return;
+  const resumable =
+    (state.phase === GAME_PHASES.BETTING && state.bet > 0) || state.phase === GAME_PHASES.PLAYING;
   blackjackStorage.write({
     bankroll: state.bankroll,
     highBankroll: state.highBankroll,
+    lastWager: state.lastWager,
+    session: state.session,
+    snapshot: resumable
+      ? {
+          activeHand: state.activeHand,
+          bankroll: state.bankroll,
+          bet: state.bet,
+          betChips: state.betChips,
+          dealer: state.dealer,
+          deck: state.deck,
+          hands: state.hands,
+          phase: state.phase,
+        }
+      : null,
   });
 }
 
@@ -268,6 +275,13 @@ function tableBet() {
   return state.hands.reduce((sum, hand) => sum + hand.bet, state.bet);
 }
 
+function currentBlackjackFunds() {
+  return (
+    state.bankroll +
+    ([GAME_PHASES.BETTING, GAME_PHASES.PLAYING].includes(state.phase) ? tableBet() : 0)
+  );
+}
+
 function addBet(amount) {
   if (!tutorialCanUse("chip")) return;
   if (state.phase !== GAME_PHASES.BETTING || amount > state.bankroll) return;
@@ -275,6 +289,7 @@ function addBet(amount) {
   state.bet += amount;
   state.betChips.push(amount);
   state.message = `${money(state.bet)} ready. Deal when you're set.`;
+  saveBankroll();
   render();
 }
 
@@ -285,6 +300,7 @@ function clearBet() {
   state.bet = 0;
   state.betChips = [];
   state.message = "Place your bet to start a hand.";
+  saveBankroll();
   render();
 }
 
@@ -292,6 +308,7 @@ function deal() {
   if (!tutorialCanUse("deal")) return;
   if (state.phase !== GAME_PHASES.BETTING || state.bet <= 0) return;
 
+  const openingWager = state.bet;
   const playerFirst = drawCard();
   const dealerUpcard = drawCard();
   const playerSecond = drawCard();
@@ -311,6 +328,8 @@ function deal() {
   state.dealer = [dealerUpcard, dealerHoleCard];
   state.phase = GAME_PHASES.PLAYING;
   state.revealDealer = false;
+  if (!state.tutorial.active) state.lastWager = openingWager;
+  blackjackFeedback.cue("deal");
 
   if (isBlackjack(activeHand()) || handValue(state.dealer) === 21) {
     settleRound();
@@ -319,6 +338,7 @@ function deal() {
 
   state.message = handPrompt();
   tutorialAfterDeal();
+  saveBankroll();
   render();
 }
 
@@ -328,6 +348,7 @@ function hit() {
   if (state.phase !== GAME_PHASES.PLAYING || !hand) return;
 
   hand.cards.push(drawCard());
+  blackjackFeedback.cue("deal");
 
   if (handValue(hand.cards) > 21) {
     hand.status = "bust";
@@ -338,6 +359,7 @@ function hit() {
 
   state.message = handPrompt();
   tutorialAfterHit();
+  saveBankroll();
   render();
 }
 
@@ -349,6 +371,7 @@ function stand() {
   hand.status = "stood";
   hand.result = "Stood";
   tutorialBeforeAdvanceFromStand();
+  saveBankroll();
   advanceHand();
 }
 
@@ -363,6 +386,7 @@ function doubleDown() {
   hand.cards.push(drawCard());
   hand.status = handValue(hand.cards) > 21 ? "bust" : "stood";
   hand.result = hand.status === "bust" ? "Bust" : "Stood";
+  saveBankroll();
   advanceHand();
 }
 
@@ -372,6 +396,12 @@ function splitHand() {
   if (state.phase !== GAME_PHASES.PLAYING || !canSplitHand(hand)) return;
 
   state.bankroll -= hand.bet;
+  if (!state.tutorial.active) {
+    state.session = blackjackSessions.record(state.session, {
+      bankroll: currentBlackjackFunds(),
+      increments: { splits: 1 },
+    });
+  }
   state.betChips.push(hand.bet);
   const [first, second] = hand.cards;
   state.hands = [
@@ -381,6 +411,7 @@ function splitHand() {
   state.activeHand = 0;
   state.message = "Split into two hands. Play Hand 1 first.";
   tutorialAfterSplit();
+  saveBankroll();
   render();
 }
 
@@ -520,7 +551,7 @@ function stopTutorial() {
   state.tutorial.awaitingNextHand = false;
 
   if (new URLSearchParams(window.location.search).get("tutorial") === "1") {
-    window.history.replaceState(null, "", `${window.location.pathname}${window.location.hash}`);
+    window.history.replaceState(null, "", gameCore.removeQueryParam("tutorial"));
   }
 }
 
@@ -533,6 +564,7 @@ function advanceHand() {
     state.activeHand = nextIndex;
     state.hands[nextIndex].status = "playing";
     state.message = handPrompt();
+    saveBankroll();
     render();
     return;
   }
@@ -563,9 +595,26 @@ function settleRound() {
   });
 
   state.bankroll += settlement.totalPayout;
+  if (!state.tutorial.active) {
+    const results = settlement.settlements.map(({ result }) => result);
+    state.session = blackjackSessions.record(state.session, {
+      bankroll: state.bankroll,
+      increments: {
+        blackjacks: results.filter((result) => result === "Blackjack").length,
+        losses: results.filter((result) => result === "Lose" || result === "Bust").length,
+        pushes: results.filter((result) => result === "Push").length,
+        rounds: 1,
+        wins: results.filter((result) => result === "Win" || result === "Blackjack").length,
+      },
+    });
+  }
   updateHighBankroll();
   saveBankroll();
   state.message = roundSummary(settlement.totalPayout);
+  const wagered = state.hands.reduce((total, hand) => total + hand.bet, 0);
+  const wonRound = settlement.totalPayout > wagered;
+  blackjackFeedback.cue(wonRound ? "win" : "loss");
+  blackjackFeedback.vibrate(wonRound ? [20, 30, 20] : 20);
 
   if (state.bankroll <= 0) {
     state.message = "You're out of chips. Start a new game to reset your bankroll.";
@@ -608,7 +657,23 @@ function resetRound() {
     state.bankroll > 0
       ? "Place your bet to start a hand."
       : "You're out of chips. Start a new game to reset your bankroll.";
+  saveBankroll();
   render();
+}
+
+function rebetAndDealBlackjack() {
+  if (
+    state.phase !== GAME_PHASES.BETTING ||
+    state.tutorial.active ||
+    state.bet > 0 ||
+    !state.lastWager ||
+    state.lastWager > state.bankroll
+  )
+    return;
+  state.bankroll -= state.lastWager;
+  state.bet = state.lastWager;
+  state.betChips = chipAmountsForBet(state.lastWager);
+  deal();
 }
 
 function newGame(resetBankroll = true) {
@@ -616,7 +681,8 @@ function newGame(resetBankroll = true) {
   stopTutorial();
   if (resetBankroll) {
     state.bankroll = startingBankroll;
-    saveBankroll();
+    state.session = emptyBlackjackSession();
+    state.lastWager = null;
   }
   state.bet = 0;
   state.betChips = [];
@@ -627,7 +693,61 @@ function newGame(resetBankroll = true) {
   state.phase = GAME_PHASES.BETTING;
   state.revealDealer = false;
   state.message = "Place your bet to start a hand.";
+  saveBankroll();
   render();
+}
+
+function resetBlackjackSession() {
+  if (
+    state.tutorial.active ||
+    state.phase === GAME_PHASES.PLAYING ||
+    (state.phase === GAME_PHASES.BETTING && state.bet > 0)
+  )
+    return;
+  state.session = emptyBlackjackSession(currentBlackjackFunds());
+  state.message = "Session statistics reset.";
+  saveBankroll();
+  render();
+}
+
+function blackjackSummaryRows() {
+  const session = state.session;
+  const profit = blackjackSessions.profit(session, currentBlackjackFunds(), {
+    disabled: state.tutorial.active,
+  });
+  const decidedHands = session.wins + session.losses;
+  const winRate = decidedHands ? Math.round((session.wins / decidedHands) * 100) : 0;
+  return [
+    { label: "Rounds played", value: String(session.rounds) },
+    {
+      className: profit > 0 ? "positive" : profit < 0 ? "negative" : "",
+      label: "Session result",
+      value: money(profit),
+    },
+    { label: "Winning hands", value: String(session.wins) },
+    { label: "Losing hands", value: String(session.losses) },
+    { label: "Win rate", value: `${winRate}%` },
+    { label: "Pushes", value: String(session.pushes) },
+    { label: "Blackjacks", value: String(session.blackjacks) },
+    { label: "Splits", value: String(session.splits) },
+    { label: "Peak bankroll", value: money(session.largestBankroll) },
+  ];
+}
+
+function renderBlackjackSession() {
+  const session = state.session;
+  const profit = blackjackSessions.profit(session, currentBlackjackFunds(), {
+    disabled: state.tutorial.active,
+  });
+  els.sessionRounds.textContent = String(session.rounds);
+  els.sessionWins.textContent = String(session.wins);
+  els.sessionLosses.textContent = String(session.losses);
+  els.sessionPushes.textContent = String(session.pushes);
+  els.sessionBlackjacks.textContent = String(session.blackjacks);
+  els.sessionSplits.textContent = String(session.splits);
+  els.sessionPeak.textContent = money(session.largestBankroll);
+  els.sessionProfit.textContent = money(profit);
+  els.sessionProfit.className = profit > 0 ? "positive" : profit < 0 ? "negative" : "";
 }
 
 function cardTemplate(card, hidden = false) {
@@ -748,7 +868,7 @@ function renderBetStack() {
 }
 
 function render() {
-  hideTooltip();
+  tooltipController.hide();
   const hiddenDealer = state.dealer.length > 1 && !state.revealDealer;
   const visibleDealerTotal = hiddenDealer ? String(state.dealer[0].value) : handLabel(state.dealer);
   const hand = activeHand();
@@ -784,6 +904,15 @@ function render() {
   els.nextHand.disabled = state.tutorial.active
     ? !tutorialCanUse("next")
     : state.phase !== GAME_PHASES.SETTLED || state.bankroll <= 0;
+  els.rebet.disabled =
+    !inBetting ||
+    state.tutorial.active ||
+    state.bet > 0 ||
+    !state.lastWager ||
+    state.lastWager > state.bankroll;
+  els.resetSession.disabled = state.tutorial.active || inPlaying || (inBetting && state.bet > 0);
+  els.summary.disabled = state.tutorial.active;
+  renderBlackjackSession();
   renderTutorialOverlay();
 }
 
@@ -805,6 +934,8 @@ function renderTutorialOverlay() {
   }
 
   const actionLabels = {
+    deal: "Deal",
+    double: "Double",
     hit: "Hit",
     stand: "Stand",
     split: "Split",
@@ -814,46 +945,18 @@ function renderTutorialOverlay() {
   const allowedLabel = actionLabels[state.tutorial.allowedAction] || "";
 
   els.tutorialOverlay.hidden = false;
-  els.tutorialOverlay.innerHTML = `
-    <span>${state.tutorial.intro ? "Tutorial Intro" : `Tutorial Hand ${Math.min(state.tutorial.handIndex + 1, tutorialHands.length)} of ${tutorialHands.length}`}</span>
-    <p>${state.tutorial.instruction.replace(/\n/g, "<br>")}</p>
-    ${allowedLabel ? `<strong>Next action: ${allowedLabel}</strong>` : ""}
-  `;
-}
-
-function showTooltip(button) {
-  const text = button.dataset.tooltip;
-  if (!text || button.disabled) return;
-
-  if (!els.tooltip) {
-    els.tooltip = document.createElement("div");
-    els.tooltip.className = "tooltip";
-    document.body.append(els.tooltip);
-  }
-
-  els.tooltip.textContent = text;
-  els.tooltip.classList.add("visible");
-
-  const margin = 8;
-  const buttonRect = button.getBoundingClientRect();
-  const tooltipRect = els.tooltip.getBoundingClientRect();
-  const idealLeft = buttonRect.left + buttonRect.width / 2 - tooltipRect.width / 2;
-  const left = Math.min(
-    window.innerWidth - tooltipRect.width - margin,
-    Math.max(margin, idealLeft),
-  );
-  const top = Math.max(margin, buttonRect.top + window.scrollY - tooltipRect.height - 12);
-  const arrowLeft = buttonRect.left + buttonRect.width / 2 - left;
-
-  els.tooltip.style.left = `${left + window.scrollX}px`;
-  els.tooltip.style.top = `${top}px`;
-  els.tooltip.style.setProperty("--arrow-left", `${arrowLeft}px`);
-}
-
-function hideTooltip() {
-  if (els.tooltip) {
-    els.tooltip.classList.remove("visible");
-  }
+  window.NeonTutorialUi.render({
+    complete: state.tutorial.allowedAction === "new-game",
+    container: els.tutorialOverlay,
+    current: state.tutorial.handIndex + 1,
+    instruction: state.tutorial.instruction,
+    intro: state.tutorial.intro,
+    nextAction: allowedLabel,
+    onRestart: startTutorial,
+    strategyHref: "../blackjack-rules/index.html#strategy-chart-title",
+    total: tutorialHands.length,
+    unit: "Hand",
+  });
 }
 
 els.chips.forEach((button) => {
@@ -867,23 +970,34 @@ els.double.addEventListener("click", doubleDown);
 els.split.addEventListener("click", splitHand);
 els.newGame.addEventListener("click", () => newGame());
 els.nextHand.addEventListener("click", resetRound);
-
-const supportsHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-
-document.querySelectorAll("[data-tooltip]").forEach((button) => {
-  if (supportsHover) {
-    button.addEventListener("mouseenter", () => showTooltip(button));
-    button.addEventListener("mouseleave", hideTooltip);
-  }
-  button.addEventListener("focus", () => showTooltip(button));
-  button.addEventListener("blur", hideTooltip);
+els.rebet.addEventListener("click", rebetAndDealBlackjack);
+els.resetSession.addEventListener("click", resetBlackjackSession);
+window.NeonSessionFramework.bindSummaryDialog({
+  content: els.summaryContent,
+  dialog: els.summaryDialog,
+  getRows: blackjackSummaryRows,
+  trigger: els.summary,
+});
+window.NeonTableSettings.bindSettingsDialog({
+  controls: { haptics: els.settingHaptics, sound: els.settingSound },
+  dialog: els.settingsDialog,
+  store: blackjackSettingsStore,
+  trigger: els.settings,
 });
 
-window.addEventListener("resize", hideTooltip);
-window.addEventListener("scroll", hideTooltip, { passive: true });
+const tooltipController = gameCore.setupTooltips();
+gameCore.setupSeedDebugIndicator();
+gameCore.setupCrossTabSync({
+  isActive: () =>
+    state.phase === GAME_PHASES.PLAYING || (state.phase === GAME_PHASES.BETTING && state.bet > 0),
+  key: blackjackStorage.key,
+});
 
 if (new URLSearchParams(window.location.search).get("tutorial") === "1") {
   startTutorial();
+} else if (savedBlackjackSnapshot) {
+  if (state.deck.length < 12) state.deck = buildDeck();
+  render();
 } else {
   newGame(false);
 }

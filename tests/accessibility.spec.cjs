@@ -6,12 +6,15 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("primary pages have no automated WCAG A or AA violations", async ({ page }) => {
+  test.setTimeout(90000);
   const paths = [
     "/",
     "/blackjack/",
     "/blackjack-rules/",
     "/baccarat/",
     "/baccarat-rules/",
+    "/three-card-poker/",
+    "/three-card-poker-rules/",
     "/privacy-policy/",
     "/terms/",
   ];

@@ -1,0 +1,5 @@
+[build]
+  command = "node scripts/write-build-version.cjs"
+
+[functions]
+  directory = "netlify/functions"

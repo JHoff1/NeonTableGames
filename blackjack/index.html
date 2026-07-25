@@ -63,6 +63,7 @@
           <nav class="game-switcher" aria-label="Game navigation">
             <a href="../index.html">All Games</a>
             <a href="../blackjack-rules/index.html">Blackjack Rules</a>
+            <button id="blackjack-settings" type="button">Settings</button>
           </nav>
           <p class="eyebrow">Blackjack</p>
           <h1><a class="title-home-link" href="../index.html">Neon Table Games</a></h1>
@@ -127,6 +128,7 @@
         </div>
         <div class="actions">
           <button id="clear-bet" class="secondary" data-tooltip="Return your current bet to your bankroll">Clear</button>
+          <button id="blackjack-rebet" class="secondary" data-tooltip="Repeat the previous wager and immediately deal">Rebet &amp; Deal</button>
           <button id="deal" class="primary" data-tooltip="Start a hand with your current bet">Deal</button>
           <button id="split" data-tooltip="Split a matching pair into two hands">Split</button>
           <button id="stand" data-tooltip="End your turn and let the dealer play">Stand</button>
@@ -135,10 +137,64 @@
           <button id="next-hand" class="secondary" data-tooltip="Clear the table and keep your current bankroll">Next Hand</button>
         </div>
       </section>
+
+      <section class="game-session" aria-labelledby="blackjack-session-heading">
+        <div class="game-session-heading">
+          <h2 id="blackjack-session-heading">Session</h2>
+          <div class="session-actions">
+            <button id="blackjack-summary" class="secondary" data-tooltip="Review this Blackjack session">Summary</button>
+            <button id="blackjack-reset-session" class="secondary" data-tooltip="Restart the session counters">Reset Session</button>
+          </div>
+        </div>
+        <div class="game-session-stats">
+          <div><span>Rounds</span><strong id="blackjack-session-rounds">0</strong></div>
+          <div><span>Wins</span><strong id="blackjack-session-wins">0</strong></div>
+          <div><span>Losses</span><strong id="blackjack-session-losses">0</strong></div>
+          <div><span>Pushes</span><strong id="blackjack-session-pushes">0</strong></div>
+          <div><span>Blackjacks</span><strong id="blackjack-session-blackjacks">0</strong></div>
+          <div><span>Splits</span><strong id="blackjack-session-splits">0</strong></div>
+          <div><span>Peak</span><strong id="blackjack-session-peak">$1,000</strong></div>
+          <div><span>Profit/Loss</span><strong id="blackjack-session-profit">$0</strong></div>
+        </div>
+      </section>
     </main>
 
+    <dialog id="blackjack-settings-dialog" class="game-dialog">
+      <form method="dialog">
+        <div class="dialog-heading">
+          <h2>Game Settings</h2>
+          <button value="cancel" class="dialog-close" aria-label="Close settings">&#215;</button>
+        </div>
+        <label class="setting-row">
+          <span><strong>Sound</strong><small>Play subtle card and result cues in every game.</small></span>
+          <input id="blackjack-setting-sound" type="checkbox">
+        </label>
+        <label class="setting-row">
+          <span><strong>Haptics</strong><small>Use brief vibration where supported.</small></span>
+          <input id="blackjack-setting-haptics" type="checkbox">
+        </label>
+        <button value="cancel" class="primary dialog-done">Done</button>
+      </form>
+    </dialog>
+
+    <dialog id="blackjack-summary-dialog" class="game-dialog session-summary-dialog">
+      <form method="dialog">
+        <div class="dialog-heading">
+          <h2>Session Summary</h2>
+          <button value="cancel" class="dialog-close" aria-label="Close session summary">&#215;</button>
+        </div>
+        <div id="blackjack-summary-content" class="session-summary-content"></div>
+        <button value="cancel" class="primary dialog-done">Done</button>
+      </form>
+    </dialog>
+
+    <script src="../shared/error-monitoring.js"></script>
     <script src="../shared/game-core.js"></script>
+    <script src="../shared/game-settings.js"></script>
+    <script src="../shared/session-framework.js"></script>
+    <script src="../shared/tutorial-ui.js"></script>
     <script src="../shared/blackjack-engine.js"></script>
+    <script src="tutorial-data.js"></script>
     <script src="../script.js"></script>
   </body>
 </html>

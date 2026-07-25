@@ -75,10 +75,17 @@
         </section>
 
         <section>
+          <h2>Operational Error Reports</h2>
+          <p>When the production site encounters a JavaScript error or a failed script, stylesheet, or image, it may send a limited diagnostic report to a first-party Netlify Function. Reports include the page path, asset path or external hostname, a shortened error message, line and column numbers, and a timestamp.</p>
+          <p>These reports exclude URL query values, game state, bankrolls, cards, wagers, form input, email addresses, and persistent user identifiers. Each page load is limited to five reports.</p>
+        </section>
+
+        <section>
           <h2>Contact</h2>
           <p>For privacy questions, use the contact method provided by Neon Table Games when one is made available.</p>
         </section>
       </article>
     </main>
+    <script src="../shared/error-monitoring.js"></script>
   </body>
 </html>

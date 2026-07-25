@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Free Online Three Card Poker | Neon Table Games</title>
+    <meta name="description" content="Play free Three Card Poker with Ante, Play, Pair Plus, standard dealer qualification, strategy guidance, and no signup.">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#0e5f49">
+    <link rel="canonical" href="https://neontablegames.com/three-card-poker/">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any">
+    <link rel="manifest" href="../site.webmanifest">
+    <meta property="og:site_name" content="Neon Table Games">
+    <meta property="og:title" content="Free Online Three Card Poker | Neon Table Games">
+    <meta property="og:description" content="Play free Three Card Poker in your browser with Ante, Play, and Pair Plus wagers.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://neontablegames.com/three-card-poker/">
+    <meta property="og:image" content="https://neontablegames.com/favicon.svg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Free Online Three Card Poker | Neon Table Games">
+    <meta name="twitter:description" content="Play free Three Card Poker with no signup.">
+    <meta name="twitter:image" content="https://neontablegames.com/favicon.svg">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../three-card-poker.css">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XKETCHHVRE"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XKETCHHVRE');
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Neon Table Games Three Card Poker",
+        "url": "https://neontablegames.com/three-card-poker/",
+        "applicationCategory": "GameApplication",
+        "operatingSystem": "Any",
+        "browserRequirements": "Requires JavaScript",
+        "description": "A free browser Three Card Poker game with Ante, Play, Pair Plus, dealer qualification, and strategy guidance.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Neon Table Games",
+          "url": "https://neontablegames.com/"
+        },
+        "inLanguage": "en-US",
+        "isAccessibleForFree": true
+      }
+    </script>
+  </head>
+  <body class="poker-page">
+    <main class="poker-shell">
+      <header class="game-top" aria-label="Game status">
+        <div class="title-block">
+          <nav class="game-switcher" aria-label="Game navigation">
+            <a href="../index.html">All Games</a>
+            <a href="../three-card-poker-rules/index.html">Poker Rules</a>
+            <button id="poker-settings" type="button">Settings</button>
+          </nav>
+          <p class="eyebrow">Three Card Poker</p>
+          <h1><a class="title-home-link" href="../index.html">Neon Table Games</a></h1>
+          <p class="game-disclaimer">Free play-money Three Card Poker. No real-money wagering, deposits, prizes, or cash-out.</p>
+          <button id="poker-new-game" class="secondary top-reset" data-tooltip="Reset the table and restore the starting bankroll">NEW GAME</button>
+        </div>
+        <div class="top-status">
+          <div class="stats">
+            <div><span>Bankroll</span><strong id="poker-bankroll">$1,000</strong></div>
+            <div><span>Ante</span><strong id="poker-ante">$0</strong></div>
+            <div><span>Pair Plus</span><strong id="poker-pair-plus">$0</strong></div>
+            <div><span>Best Run</span><strong id="poker-high-bankroll">$1,000</strong></div>
+          </div>
+        </div>
+      </header>
+
+      <section id="poker-felt" class="poker-felt" aria-live="polite">
+        <aside id="poker-tutorial" class="poker-tutorial" aria-live="polite" hidden></aside>
+        <section class="poker-hand-zone dealer-side" aria-labelledby="poker-dealer-heading">
+          <div class="poker-hand-heading">
+            <h2 id="poker-dealer-heading">Dealer</h2>
+            <span id="poker-dealer-rank" class="hand-rank">Waiting</span>
+          </div>
+          <div id="poker-dealer-hand" class="poker-hand" role="group" aria-label="Dealer hand"></div>
+        </section>
+
+        <section class="poker-center">
+          <div id="poker-result" class="poker-result" hidden></div>
+          <p id="poker-message">Place an Ante to start a round.</p>
+          <div class="poker-table-rules" aria-label="Table payouts">
+            <span>Dealer qualifies with Q-high</span>
+            <span>Ante Bonus: Straight 1:1 &middot; Trips 4:1 &middot; Straight Flush 5:1</span>
+          </div>
+          <div class="poker-wager-spots" aria-label="Wagers on the table">
+            <div class="poker-wager-spot"><span>Ante</span><div id="poker-ante-stack" class="poker-chip-stack"></div></div>
+            <div class="poker-wager-spot play-spot"><span>Play</span><div id="poker-play-stack" class="poker-chip-stack"></div></div>
+            <div class="poker-wager-spot pair-plus-spot"><span>Pair Plus</span><div id="poker-pair-plus-stack" class="poker-chip-stack"></div></div>
+          </div>
+        </section>
+
+        <section class="poker-hand-zone player-side" aria-labelledby="poker-player-heading">
+          <div class="poker-hand-heading">
+            <h2 id="poker-player-heading">Player</h2>
+            <span id="poker-player-rank" class="hand-rank">Waiting</span>
+          </div>
+          <div id="poker-player-hand" class="poker-hand" role="group" aria-label="Player hand"></div>
+        </section>
+      </section>
+
+      <section class="poker-controls" aria-label="Three Card Poker controls">
+        <div class="poker-bet-targets" aria-label="Choose a wager">
+          <button class="poker-bet-target" data-poker-bet="ante" aria-pressed="true" data-tooltip="Required wager used for the dealer comparison">
+            <span>Ante</span><strong>Required</strong>
+          </button>
+          <button class="poker-bet-target pair-plus-target" data-poker-bet="pairPlus" aria-pressed="false" data-tooltip="Optional wager paid from your three-card hand only">
+            <span>Pair Plus</span><strong>Optional</strong>
+          </button>
+        </div>
+        <div class="poker-control-row">
+          <div class="chips poker-chips" aria-label="Bet chips">
+            <button class="chip" data-poker-chip="5" data-tooltip="Add $5 to the selected wager"><span class="chip-dollar">$</span>5</button>
+            <button class="chip" data-poker-chip="25" data-tooltip="Add $25 to the selected wager"><span class="chip-dollar">$</span>25</button>
+            <button class="chip" data-poker-chip="100" data-tooltip="Add $100 to the selected wager"><span class="chip-dollar">$</span>100</button>
+            <button class="chip" data-poker-chip="500" data-tooltip="Add $500 to the selected wager"><span class="chip-dollar">$</span>500</button>
+          </div>
+          <div class="poker-actions">
+            <button id="poker-clear" class="secondary" data-tooltip="Return the current wagers to your bankroll">Clear</button>
+            <button id="poker-rebet" class="secondary" data-tooltip="Repeat the previous wagers and immediately deal">Rebet &amp; Deal</button>
+            <button id="poker-deal" class="primary" data-tooltip="Deal three cards to Player and Dealer">Deal</button>
+            <button id="poker-fold" data-tooltip="Forfeit the Ante without placing a Play wager">Fold</button>
+            <button id="poker-play" class="primary" data-tooltip="Match the Ante and compare your hand with the Dealer">Play</button>
+            <button id="poker-next" class="secondary" data-tooltip="Clear the table and prepare the next round">Next Round</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="game-session" aria-labelledby="poker-session-heading">
+        <div class="game-session-heading">
+          <h2 id="poker-session-heading">Session</h2>
+          <div class="session-actions">
+            <button id="poker-summary" class="secondary" data-tooltip="Review this Three Card Poker session">Summary</button>
+            <button id="poker-reset-session" class="secondary" data-tooltip="Restart the session counters">Reset Session</button>
+          </div>
+        </div>
+        <div class="game-session-stats session-columns-6">
+          <div><span>Rounds</span><strong id="poker-session-rounds">0</strong></div>
+          <div><span>Wins</span><strong id="poker-session-wins">0</strong></div>
+          <div><span>Losses</span><strong id="poker-session-losses">0</strong></div>
+          <div><span>Pushes</span><strong id="poker-session-pushes">0</strong></div>
+          <div><span>Folds</span><strong id="poker-session-folds">0</strong></div>
+          <div><span>Profit/Loss</span><strong id="poker-session-profit">$0</strong></div>
+        </div>
+      </section>
+    </main>
+
+    <dialog id="poker-settings-dialog" class="game-dialog">
+      <form method="dialog">
+        <div class="dialog-heading">
+          <h2>Game Settings</h2>
+          <button value="cancel" class="dialog-close" aria-label="Close settings">&#215;</button>
+        </div>
+        <label class="setting-row">
+          <span><strong>Sound</strong><small>Play subtle card and result cues in every game.</small></span>
+          <input id="poker-setting-sound" type="checkbox">
+        </label>
+        <label class="setting-row">
+          <span><strong>Haptics</strong><small>Use brief vibration where supported.</small></span>
+          <input id="poker-setting-haptics" type="checkbox">
+        </label>
+        <label class="setting-row">
+          <span><strong>Auto-reveal Player cards</strong><small>Turn over your Poker hand automatically after dealing.</small></span>
+          <input id="poker-setting-auto-reveal" type="checkbox">
+        </label>
+        <button value="cancel" class="primary dialog-done">Done</button>
+      </form>
+    </dialog>
+
+    <dialog id="poker-summary-dialog" class="game-dialog session-summary-dialog">
+      <form method="dialog">
+        <div class="dialog-heading">
+          <h2>Session Summary</h2>
+          <button value="cancel" class="dialog-close" aria-label="Close session summary">&#215;</button>
+        </div>
+        <div id="poker-summary-content" class="session-summary-content"></div>
+        <button value="cancel" class="primary dialog-done">Done</button>
+      </form>
+    </dialog>
+
+    <script src="../shared/error-monitoring.js"></script>
+    <script src="../shared/game-core.js"></script>
+    <script src="../shared/game-settings.js"></script>
+    <script src="../shared/session-framework.js"></script>
+    <script src="../shared/tutorial-ui.js"></script>
+    <script src="../shared/three-card-poker-engine.js"></script>
+    <script src="tutorial-data.js"></script>
+    <script src="../three-card-poker.js"></script>
+  </body>
+</html>

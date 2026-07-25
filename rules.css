@@ -202,6 +202,10 @@
   border-bottom: 0;
 }
 
+.poker-rules-table {
+  min-width: 560px;
+}
+
 @media (max-width: 760px) {
   .rules-article .guide-grid {
     grid-template-columns: minmax(0, 1fr);

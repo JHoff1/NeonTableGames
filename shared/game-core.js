@@ -24,6 +24,7 @@
 
   const phases = Object.freeze({
     BETTING: "betting",
+    DEALING: "dealing",
     PLAYING: "playing",
     REVEALING: "revealing",
     SETTLED: "settled",
@@ -58,16 +59,31 @@
     return values[0] % maxExclusive;
   }
 
-  function shuffle(cards) {
+  function createSeededRandom(seed) {
+    let hash = 2166136261;
+    for (const character of String(seed)) {
+      hash ^= character.charCodeAt(0);
+      hash = Math.imul(hash, 16777619);
+    }
+    return function seededRandom() {
+      hash += 0x6d2b79f5;
+      let value = hash;
+      value = Math.imul(value ^ (value >>> 15), value | 1);
+      value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+      return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function shuffle(cards, { random } = {}) {
     const shuffled = [...cards];
     for (let index = shuffled.length - 1; index > 0; index -= 1) {
-      const swapIndex = secureRandomIndex(index + 1);
+      const swapIndex = random ? Math.floor(random() * (index + 1)) : secureRandomIndex(index + 1);
       [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
     }
     return shuffled;
   }
 
-  function buildShoe(deckCount = 1, game = "blackjack") {
+  function buildShoe(deckCount = 1, game = "blackjack", { seed } = {}) {
     const shoe = [];
     for (let deckIndex = 0; deckIndex < deckCount; deckIndex += 1) {
       suits.forEach((suit) => {
@@ -76,7 +92,95 @@
         });
       });
     }
-    return shuffle(shoe);
+    return shuffle(shoe, {
+      random:
+        seed === undefined || seed === null || seed === "" ? undefined : createSeededRandom(seed),
+    });
+  }
+
+  function replaySeed(location = global.location) {
+    try {
+      return new URLSearchParams(location?.search || "").get("seed") || "";
+    } catch {
+      return "";
+    }
+  }
+
+  function removeQueryParam(name, location = global.location) {
+    const url = new URL(location.href);
+    url.searchParams.delete(name);
+    return `${url.pathname}${url.search}${url.hash}`;
+  }
+
+  function setupSeedDebugIndicator(seed = replaySeed()) {
+    if (!seed || !global.document?.body) return null;
+    const indicator = global.document.createElement("aside");
+    const label = global.document.createElement("span");
+    const copy = global.document.createElement("button");
+    indicator.className = "seed-debug";
+    indicator.setAttribute("aria-label", "Debug game seed");
+    label.textContent = `Seed: ${seed}`;
+    copy.type = "button";
+    copy.textContent = "Copy";
+    copy.setAttribute("aria-label", `Copy debug seed ${seed}`);
+    copy.addEventListener("click", async () => {
+      try {
+        await global.navigator.clipboard.writeText(seed);
+        copy.textContent = "Copied";
+      } catch {
+        copy.textContent = "Copy failed";
+      }
+      global.setTimeout(() => {
+        copy.textContent = "Copy";
+      }, 1400);
+    });
+    indicator.append(label, copy);
+    global.document.body.append(indicator);
+    return indicator;
+  }
+
+  function setupCrossTabSync({ isActive, key }) {
+    let dialog = null;
+
+    function showConflict() {
+      if (!dialog) {
+        dialog = global.document.createElement("dialog");
+        dialog.className = "game-dialog cross-tab-dialog";
+        const content = global.document.createElement("div");
+        const heading = global.document.createElement("h2");
+        const message = global.document.createElement("p");
+        const reload = global.document.createElement("button");
+        heading.textContent = "Game Updated in Another Tab";
+        message.textContent =
+          "This tab has an active wager or round. Load the newer saved game before continuing.";
+        reload.type = "button";
+        reload.className = "primary";
+        reload.textContent = "Load Newer Game";
+        reload.addEventListener("click", () => global.location.reload());
+        content.append(heading, message, reload);
+        dialog.append(content);
+        dialog.addEventListener("cancel", (event) => event.preventDefault());
+        global.document.body.append(dialog);
+      }
+      if (!dialog.open) dialog.showModal();
+    }
+
+    global.addEventListener("storage", (event) => {
+      if (event.key !== key || event.newValue === event.oldValue) return;
+      if (isActive()) showConflict();
+      else global.location.reload();
+    });
+
+    return { showConflict };
+  }
+
+  function createShoeBuilder(deckCount = 1, game = "blackjack", { seed = replaySeed() } = {}) {
+    let shoeIndex = 0;
+    return function nextShoe() {
+      const shoeSeed = seed ? `${seed}:${shoeIndex}` : undefined;
+      shoeIndex += 1;
+      return buildShoe(deckCount, game, { seed: shoeSeed });
+    };
   }
 
   function money(value, { forceCents = false } = {}) {
@@ -225,14 +329,20 @@
 
   const api = {
     buildShoe,
+    createSeededRandom,
+    createShoeBuilder,
     createGameStorage,
     createCard,
     money,
     phases,
     ranks,
     readStoredNumber,
+    removeQueryParam,
+    replaySeed,
     renderCard,
     setupTooltips,
+    setupSeedDebugIndicator,
+    setupCrossTabSync,
     shuffle,
     suits,
     writeStoredNumber,

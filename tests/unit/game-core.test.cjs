@@ -6,6 +6,7 @@ const core = require("../../shared/game-core.js");
 test("shared game phases are immutable and consistent", () => {
   assert.deepEqual(core.phases, {
     BETTING: "betting",
+    DEALING: "dealing",
     PLAYING: "playing",
     REVEALING: "revealing",
     SETTLED: "settled",
@@ -23,6 +24,25 @@ test("buildShoe supports an eight-deck Baccarat shoe", () => {
   const shoe = core.buildShoe(8, "baccarat");
   assert.equal(shoe.length, 416);
   assert.equal(shoe.filter((card) => card.label === "A").length, 32);
+});
+
+test("seeded shoes replay exactly and different seeds diverge", () => {
+  const labels = (shoe) => shoe.map((card) => `${card.label}-${card.suitName}`);
+  assert.deepEqual(
+    labels(core.buildShoe(1, "blackjack", { seed: "failed-test-42" })),
+    labels(core.buildShoe(1, "blackjack", { seed: "failed-test-42" })),
+  );
+  assert.notDeepEqual(
+    labels(core.buildShoe(1, "blackjack", { seed: "failed-test-42" })),
+    labels(core.buildShoe(1, "blackjack", { seed: "another-seed" })),
+  );
+});
+
+test("shoe builders produce a deterministic sequence of replacement shoes", () => {
+  const firstBuilder = core.createShoeBuilder(1, "blackjack", { seed: "replay" });
+  const secondBuilder = core.createShoeBuilder(1, "blackjack", { seed: "replay" });
+  const topCards = (builder) => [builder().at(-1).label, builder().at(-1).label];
+  assert.deepEqual(topCards(firstBuilder), topCards(secondBuilder));
 });
 
 test("card values adapt to each game", () => {

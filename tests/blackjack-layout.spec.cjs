@@ -72,6 +72,7 @@ async function expectHealthyGameLayout(page, stateName) {
     checkPairs(".player-zone .card", "#message", "player card overlaps result message");
     checkPairs(".player-zone .card", ".tutorial-overlay", "player card overlaps tutorial guidance");
     checkPairs(".felt", ".controls", "table overlaps controls");
+    checkPairs(".controls", ".game-session", "controls overlap session");
 
     const felt = document.querySelector(".felt");
     if (visible(felt)) {
@@ -135,6 +136,89 @@ test("empty table and a dealt hand keep a stable layout", async ({ page }) => {
   await expect(page.locator(".dealer-zone .card")).toHaveCount(2);
   await expect(page.locator(".player-zone .card")).toHaveCount(2);
   await expectHealthyGameLayout(page, "initial dealt hand");
+});
+
+test("Blackjack session statistics persist and New Game resets them", async ({ page }) => {
+  await page.goto("/blackjack/?seed=session-check");
+  await clickEnabled(page, '[data-chip="25"]');
+  await clickEnabled(page, "#deal");
+  if (await page.locator("#stand").isEnabled()) await page.locator("#stand").click();
+
+  await expect(page.locator("#blackjack-session-rounds")).toHaveText("1");
+  await expect(page.locator("#blackjack-session-peak")).not.toHaveText("");
+  await expectHealthyGameLayout(page, "Blackjack session result");
+
+  await page.reload();
+  await expect(page.locator("#blackjack-session-rounds")).toHaveText("1");
+  await clickEnabled(page, "#blackjack-summary");
+  await expect(page.locator("#blackjack-summary-content")).toContainText("Rounds played");
+  await expect(page.locator("#blackjack-summary-content")).toContainText("Peak bankroll");
+  await page.locator("#blackjack-summary-dialog .dialog-done").click();
+
+  await clickEnabled(page, "#new-game");
+  await expect(page.locator("#blackjack-session-rounds")).toHaveText("0");
+  await expect(page.locator("#blackjack-session-profit")).toHaveText("$0");
+});
+
+test("a seed query replays the exact Blackjack deal", async ({ page }) => {
+  async function dealLabels() {
+    await clickEnabled(page, '[data-chip="25"]');
+    await clickEnabled(page, "#deal");
+    return page
+      .locator(".felt .card")
+      .evaluateAll((cards) => cards.map((card) => card.getAttribute("aria-label")));
+  }
+
+  await page.goto("/blackjack/?seed=layout-replay-17");
+  const firstDeal = await dealLabels();
+  await page.evaluate(() => localStorage.clear());
+  await page.goto("/blackjack/?seed=layout-replay-17");
+  expect(await dealLabels()).toEqual(firstDeal);
+});
+
+test("Blackjack restores wagers and active rounds, then supports Rebet & Deal", async ({
+  page,
+}) => {
+  await page.goto("/blackjack/?seed=layout-replay-17");
+  await clickEnabled(page, '[data-chip="25"]');
+  await page.reload();
+  await expect(page.locator("#message")).toContainText("Wager restored");
+  await expect(page.locator("#bankroll")).toHaveText("$975");
+  await expect(page.locator("#bet")).toHaveText("$25");
+
+  await clickEnabled(page, "#deal");
+  const dealtCards = await page
+    .locator(".felt .card")
+    .evaluateAll((cards) => cards.map((card) => card.getAttribute("aria-label")));
+  await page.reload();
+  await expect(page.locator("#message")).toContainText("Round restored");
+  expect(
+    await page
+      .locator(".felt .card")
+      .evaluateAll((cards) => cards.map((card) => card.getAttribute("aria-label"))),
+  ).toEqual(dealtCards);
+
+  await clickEnabled(page, "#stand");
+  await clickEnabled(page, "#next-hand");
+  await clickEnabled(page, "#blackjack-rebet");
+  await expect(page.locator("#bet")).toHaveText("$25");
+  await expect(page.locator(".player-zone .card")).toHaveCount(2);
+});
+
+test("an active Blackjack tab blocks stale writes from another tab", async ({ context, page }) => {
+  const otherTab = await context.newPage();
+  await otherTab.route("https://www.googletagmanager.com/**", (route) => route.abort());
+  await page.goto("/blackjack/?seed=cross-tab");
+  await otherTab.goto("/blackjack/?seed=cross-tab");
+
+  await clickEnabled(page, '[data-chip="25"]');
+  await expect(otherTab.locator("#message")).toContainText("Wager restored");
+  await otherTab.locator("#new-game").click();
+
+  await expect(page.locator(".cross-tab-dialog")).toBeVisible();
+  await expect(page.locator(".cross-tab-dialog")).toContainText("Game Updated in Another Tab");
+  await expect(page.locator(".cross-tab-dialog button")).toHaveText("Load Newer Game");
+  await otherTab.close();
 });
 
 test("all deterministic tutorial hands avoid overlap", async ({ page }) => {

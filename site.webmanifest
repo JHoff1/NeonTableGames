@@ -41,6 +41,19 @@
           "type": "image/svg+xml"
         }
       ]
+    },
+    {
+      "name": "Play Three Card Poker",
+      "short_name": "Three Card Poker",
+      "description": "Open the free Three Card Poker table.",
+      "url": "/three-card-poker/",
+      "icons": [
+        {
+          "src": "/favicon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
     }
   ]
 }

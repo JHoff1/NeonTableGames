@@ -7,7 +7,7 @@ module.exports = [
   },
   js.configs.recommended,
   {
-    files: ["*.js", "shared/*.js"],
+    files: ["*.js", "shared/*.js", "blackjack/*.js", "baccarat/*.js", "three-card-poker/*.js"],
     languageOptions: {
       ecmaVersion: "latest",
       globals: {
