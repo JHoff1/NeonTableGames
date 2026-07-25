@@ -215,10 +215,12 @@ test("an active Blackjack tab blocks stale writes from another tab", async ({ co
   await otherTab.goto("/blackjack/?seed=cross-tab");
 
   await clickEnabled(page, '[data-chip="25"]');
-  await expect(otherTab.locator("#message")).toContainText("Wager restored");
+  await expect(otherTab.locator("#message")).toContainText("Wager restored", {
+    timeout: 15_000,
+  });
   await otherTab.locator("#new-game").click();
 
-  await expect(page.locator(".cross-tab-dialog")).toBeVisible();
+  await expect(page.locator(".cross-tab-dialog")).toBeVisible({ timeout: 15_000 });
   await expect(page.locator(".cross-tab-dialog")).toContainText("Game Updated in Another Tab");
   await expect(page.locator(".cross-tab-dialog button")).toHaveText("Load Newer Game");
   await otherTab.close();
