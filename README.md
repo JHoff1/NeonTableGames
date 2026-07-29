@@ -1,82 +1,130 @@
 # Neon Table Games
 
-A static table games site from Neon Table Games with Blackjack, Mini Baccarat, and Three Card Poker.
+Responsive, play-money table games built as a production web application.
+
+[Play the live site](https://neontablegames.com/) | [Blackjack](https://neontablegames.com/blackjack/) | [Mini Baccarat](https://neontablegames.com/baccarat/) | [Three Card Poker](https://neontablegames.com/three-card-poker/)
+
+[![Playwright layout tests](https://github.com/JHoff1/NightTableGames/actions/workflows/playwright.yml/badge.svg)](https://github.com/JHoff1/NightTableGames/actions/workflows/playwright.yml)
+[![Lighthouse budgets](https://github.com/JHoff1/NightTableGames/actions/workflows/lighthouse.yml/badge.svg)](https://github.com/JHoff1/NightTableGames/actions/workflows/lighthouse.yml)
+[![Production smoke tests](https://github.com/JHoff1/NightTableGames/actions/workflows/production-smoke.yml/badge.svg)](https://github.com/JHoff1/NightTableGames/actions/workflows/production-smoke.yml)
+
+![Blackjack tutorial running on desktop](docs/images/blackjack-desktop.png)
+
+<p align="center">
+  <img src="docs/images/baccarat-mobile.png" width="320" alt="Mini Baccarat tutorial running on a mobile viewport">
+</p>
+
+## Project Overview
+
+Neon Table Games is an end-to-end portfolio project focused on stateful frontend
+architecture, deterministic game logic, responsive interaction design, and production
+quality assurance. It includes three complete games with shared controls and settings,
+guided tutorials, persistent sessions, and layouts designed for phones through large
+desktop displays.
+
+The site uses virtual chips only. It has no deposits, prizes, cash-out, or real-money
+wagering.
+
+## Games
+
+- **Blackjack:** 3 to 2 blackjack, hit, stand, double down, pair splitting, automatic deck
+  refresh, strategy reference, round recovery, and a seven-hand tutorial.
+- **Mini Baccarat:** Standard third-card rules, Banker commission, Player/Banker/Tie bets,
+  sequential reveals, Bead Plate and Big Road history, shoe status, and guided play.
+- **Three Card Poker:** Ante and Play wagers, optional Pair Plus, dealer qualification,
+  Ante Bonus and Pair Plus paytables, manual card reveals, and a deterministic tutorial.
+
+## Engineering Highlights
+
+- Shared React and TypeScript application shell with reusable cards, wagering controls,
+  dialogs, settings, session panels, and tutorial progress.
+- Game engines kept separate from rendering so scoring, drawing rules, and payouts can be
+  tested without a browser.
+- Versioned local persistence with unfinished-round recovery and cross-tab conflict
+  handling.
+- Seeded debug mode for reproducing exact card sequences with `?seed=failed-test-42`.
+- Privacy-conscious first-party error reporting through a rate-limited Netlify Function.
+- Responsive and accessible interaction coverage across Chromium, Firefox, and WebKit.
+- Automated Lighthouse budgets and revision-aware smoke tests against the deployed site.
+
+## Architecture
+
+```text
+Game route
+  -> React game application
+    -> Shared shell, controls, settings, and session UI
+    -> Game-specific controller
+      -> Deterministic game engine
+      -> Versioned local storage
+
+Netlify
+  -> Vite production build
+  -> Static game and rules routes
+  -> Scrubbed client-error function
+```
+
+Key directories:
+
+```text
+src/                 React applications and shared UI
+shared/              Framework-independent game and session engines
+tests/unit/           Engine, persistence, and simulation tests
+tests/*.spec.cjs      Responsive, accessibility, and navigation tests
+netlify/functions/    First-party production error endpoint
+docs/                 Device QA checklist and project images
+```
 
 ## Run Locally
 
-Install dependencies, then start Vite:
+Requirements: Node.js 20 or newer.
 
 ```powershell
-npm install
+npm ci
 npm run dev
 ```
 
-Create and preview the production output:
+Vite prints the local URL after startup. To validate the production output:
 
 ```powershell
 npm run build
 npm run preview
 ```
 
-## Host
+## Quality Assurance
 
-Netlify runs `npm run build` and publishes `dist`. Pushes to the configured production branch
-continue to deploy automatically. Other static hosts should also run the Vite build and publish
-the generated `dist` directory.
-
-## Gameplay
-
-All three game routes use a shared React, TypeScript, and Vite shell. Blackjack includes betting chips, dealer/player
-hands, 3 to 2 payouts, hit, stand, double down, split pairs, push handling, unfinished-round
-recovery, automatic previous-wager selection after Next Hand, automatic deck refresh, persistent
-session statistics, and a guided tutorial. Its scoring and payouts continue to use the existing
-shared Blackjack engine.
-
-Mini Baccarat includes Player, Banker, and Tie bets, standard third-card rules, 5% Banker commission, cut-card shoe status, sequential dealing, automatic Banker reveals, optional automatic Player reveals, Bead Plate and Big Road views, unfinished-round recovery, automatic previous-wager selection after Next Round, persistent session statistics, session summaries, and a guided tutorial.
-
-Three Card Poker includes Ante and Play wagers, optional Pair Plus, tutorial-only Q-6-4 strategy guidance, sequential dealing and Dealer reveals, optional tap-to-reveal Player cards, visible felt wagers, dealer qualification, Ante Bonus and Pair Plus paytables, unfinished-round recovery, automatic previous-wager selection after Next Round, persistent session statistics, a session summary, and a deterministic tutorial.
-
-Add a `seed` query parameter to any game URL to replay its card sequence during debugging, for example `/blackjack/?seed=failed-test-42`. Seeded pages show a debug badge with a copy button.
-
-Saved games synchronize across tabs. Idle tabs load newer state automatically; a tab with an active wager or round displays a blocking reload prompt so it cannot overwrite newer progress.
-
-Production JavaScript and asset failures are sent to a rate-limited first-party Netlify Function. Reports are scrubbed and exclude query values, game state, wagers, cards, user input, and persistent identifiers.
-
-## QA
-
-Install the test dependencies and browser engines once:
+Install the browser engines once, then run the complete local suite:
 
 ```powershell
-npm install
 npx playwright install chromium firefox webkit
-```
-
-Run linting, formatting checks, unit tests, responsive layout tests, and accessibility checks:
-
-```powershell
 npm test
 ```
 
-The automated suite validates shared versioned storage and preferences, cross-tab conflicts, all three payout engines, thousands of seeded simulation rounds, unfinished-round recovery, road calculations, empty and settled game tables, deterministic tutorials, keyboard card reveals, accessibility, result history, and rules tables in Chromium, Firefox, and WebKit across phone, tablet, and desktop viewports. Failure-only screenshots and traces are written to `test-results/`.
+The suite covers linting, formatting, payout engines, seeded statistical simulations,
+storage migrations, cross-tab synchronization, unfinished-round recovery, tutorials,
+keyboard interaction, accessibility, navigation, and responsive layouts.
 
-The same suite runs automatically in GitHub Actions for pull requests and pushes to `master`.
-
-Production smoke tests wait until Netlify reports the exact deployed Git revision, then run against the live site. They also run daily and can be started manually:
-
-```powershell
-npm run test:production
-```
-
-Run the mobile Lighthouse performance budgets locally:
+Additional production checks:
 
 ```powershell
 npm run test:performance
+npm run test:production
 ```
 
-Lighthouse enforces minimum performance, accessibility, best-practices, and SEO scores along with limits for first contentful paint, largest contentful paint, total blocking time, and cumulative layout shift.
+GitHub Actions runs the full browser suite and Lighthouse budgets on changes to `master`.
+After those checks pass, production smoke tests wait for Netlify to serve the exact Git
+revision before validating the live routes and assets. A scheduled smoke test also runs
+daily.
 
-Use `docs/visual-regression-checklist.md` for the remaining Samsung Internet, Chrome Android, and Safari iOS device spot checks before deploying major layout changes.
+Physical-device checks for Safari iOS, Samsung Internet, and Chrome Android are documented
+in [docs/visual-regression-checklist.md](docs/visual-regression-checklist.md).
 
-## Credits
+## Deployment
 
-The favicon uses the Bootstrap Icons `suit-spade-fill` path, licensed under MIT.
+Netlify runs `npm run build` and publishes `dist`. Other static hosts can use the same build
+command and output directory; the error-reporting function is the only Netlify-specific
+runtime component.
+
+## License
+
+Licensed under the [Apache License 2.0](LICENSE). The favicon uses the Bootstrap Icons
+`suit-spade-fill` path under the MIT License.
