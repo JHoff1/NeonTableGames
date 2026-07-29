@@ -4,9 +4,9 @@ Responsive, play-money table games built as a production web application.
 
 [Play the live site](https://neontablegames.com/) | [Blackjack](https://neontablegames.com/blackjack/) | [Mini Baccarat](https://neontablegames.com/baccarat/) | [Three Card Poker](https://neontablegames.com/three-card-poker/)
 
-[![Playwright layout tests](https://github.com/JHoff1/NightTableGames/actions/workflows/playwright.yml/badge.svg)](https://github.com/JHoff1/NightTableGames/actions/workflows/playwright.yml)
-[![Lighthouse budgets](https://github.com/JHoff1/NightTableGames/actions/workflows/lighthouse.yml/badge.svg)](https://github.com/JHoff1/NightTableGames/actions/workflows/lighthouse.yml)
-[![Production smoke tests](https://github.com/JHoff1/NightTableGames/actions/workflows/production-smoke.yml/badge.svg)](https://github.com/JHoff1/NightTableGames/actions/workflows/production-smoke.yml)
+[![Playwright layout tests](https://github.com/JHoff1/NeonTableGames/actions/workflows/playwright.yml/badge.svg)](https://github.com/JHoff1/NeonTableGames/actions/workflows/playwright.yml)
+[![Lighthouse budgets](https://github.com/JHoff1/NeonTableGames/actions/workflows/lighthouse.yml/badge.svg)](https://github.com/JHoff1/NeonTableGames/actions/workflows/lighthouse.yml)
+[![Production smoke tests](https://github.com/JHoff1/NeonTableGames/actions/workflows/production-smoke.yml/badge.svg)](https://github.com/JHoff1/NeonTableGames/actions/workflows/production-smoke.yml)
 
 ![Blackjack tutorial running on desktop](docs/images/blackjack-desktop.png)
 
