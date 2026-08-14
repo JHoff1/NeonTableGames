@@ -10,6 +10,10 @@ on:
     types:
       - completed
 
+concurrency:
+  group: production-smoke
+  cancel-in-progress: true
+
 jobs:
   production:
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
