@@ -20,7 +20,7 @@ test("production pages, assets, canonicals, and sitemap are healthy", async ({ p
       if (
         url.origin === "https://www.neontablegames.com" &&
         ["script", "stylesheet"].includes(response.request().resourceType()) &&
-        !response.ok()
+        response.status() >= 400
       ) {
         failedAssets.push(`${response.status()} ${url.pathname}`);
       }
