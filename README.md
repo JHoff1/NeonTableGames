@@ -2,7 +2,7 @@
 
 Responsive, play-money table games built as a production web application.
 
-[Play the live site](https://neontablegames.com/) | [Blackjack](https://neontablegames.com/blackjack/) | [Mini Baccarat](https://neontablegames.com/baccarat/) | [Three Card Poker](https://neontablegames.com/three-card-poker/)
+[Play the live site](https://www.neontablegames.com/) | [Blackjack](https://www.neontablegames.com/blackjack/) | [Mini Baccarat](https://www.neontablegames.com/baccarat/) | [Three Card Poker](https://www.neontablegames.com/three-card-poker/)
 
 [![Playwright layout tests](https://github.com/JHoff1/NeonTableGames/actions/workflows/playwright.yml/badge.svg)](https://github.com/JHoff1/NeonTableGames/actions/workflows/playwright.yml)
 [![Lighthouse budgets](https://github.com/JHoff1/NeonTableGames/actions/workflows/lighthouse.yml/badge.svg)](https://github.com/JHoff1/NeonTableGames/actions/workflows/lighthouse.yml)

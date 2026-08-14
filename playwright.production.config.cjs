@@ -9,7 +9,7 @@ module.exports = defineConfig({
   workers: 1,
   reporter: "list",
   use: {
-    baseURL: "https://neontablegames.com",
+    baseURL: "https://www.neontablegames.com",
     trace: "retain-on-failure",
   },
 });

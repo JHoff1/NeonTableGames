@@ -42,7 +42,7 @@ jobs:
           for attempt in {1..90}; do
             deployed="$(curl --fail --silent --show-error \
               --header 'Cache-Control: no-cache' \
-              "https://neontablegames.com/deployment-version.json?expected=${EXPECTED_SHA}&attempt=${attempt}" \
+              "https://www.neontablegames.com/deployment-version.json?expected=${EXPECTED_SHA}&attempt=${attempt}" \
               || true)"
             if printf '%s' "$deployed" | grep --fixed-strings --quiet "$EXPECTED_SHA"; then
               echo "Production is serving $EXPECTED_SHA"

@@ -18,7 +18,7 @@ test("production pages, assets, canonicals, and sitemap are healthy", async ({ p
     const handleResponse = (response) => {
       const url = new URL(response.url());
       if (
-        url.origin === "https://neontablegames.com" &&
+        url.origin === "https://www.neontablegames.com" &&
         ["script", "stylesheet"].includes(response.request().resourceType()) &&
         !response.ok()
       ) {
@@ -28,9 +28,12 @@ test("production pages, assets, canonicals, and sitemap are healthy", async ({ p
     page.on("response", handleResponse);
     const response = await page.goto(path, { waitUntil: "networkidle" });
     expect(response?.ok(), `${path} should return a successful document`).toBe(true);
+    expect(page.url(), `${path} should not redirect away from the canonical host`).toBe(
+      `https://www.neontablegames.com${path}`,
+    );
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       "href",
-      `https://neontablegames.com${path}`,
+      `https://www.neontablegames.com${path}`,
     );
     expect(failedAssets, `${path} should load its local scripts and styles`).toEqual([]);
     page.off("response", handleResponse);
@@ -40,7 +43,7 @@ test("production pages, assets, canonicals, and sitemap are healthy", async ({ p
   expect(sitemapResponse.ok()).toBe(true);
   const sitemap = await sitemapResponse.text();
   for (const path of paths) {
-    expect(sitemap).toContain(`<loc>https://neontablegames.com${path}</loc>`);
+    expect(sitemap).toContain(`<loc>https://www.neontablegames.com${path}</loc>`);
   }
 
   const versionResponse = await request.get("/deployment-version.json");
