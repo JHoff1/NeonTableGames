@@ -32,6 +32,14 @@ module.exports = [
     },
   },
   {
+    files: ["scripts/*.mjs"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      globals: globals.node,
+      sourceType: "module",
+    },
+  },
+  {
     files: ["src/**/*.{ts,tsx}", "vite.config.mts"],
     languageOptions: {
       ecmaVersion: "latest",

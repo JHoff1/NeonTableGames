@@ -134,7 +134,7 @@ a {
   border: 0;
   color: #c8d6ce;
   background: transparent;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 700;
   text-decoration: none;
 }
@@ -155,7 +155,7 @@ a {
 .eyebrow {
   margin: 0 0 2px;
   color: var(--accent);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 850;
   letter-spacing: 0;
   text-transform: uppercase;
@@ -210,7 +210,7 @@ a {
 .game-session-stats span {
   overflow: hidden;
   color: var(--muted);
-  font-size: 0.66rem;
+  font-size: 0.75rem;
   font-weight: 750;
   text-overflow: ellipsis;
   text-transform: uppercase;
@@ -323,7 +323,7 @@ a {
 }
 
 .chip-dollar {
-  font-size: 0.68em;
+  font-size: 0.82em;
 }
 
 .actions {
@@ -505,7 +505,7 @@ a {
   justify-content: space-between;
   gap: 10px;
   color: var(--accent);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
 }
 
@@ -523,7 +523,7 @@ a {
   min-height: 26px;
   padding: 3px 6px;
   color: #dcece5;
-  font-size: 0.62rem;
+  font-size: 0.75rem;
   text-decoration: none;
 }
 
@@ -536,14 +536,14 @@ a {
 
 .tutorial-overlay p {
   margin: 5px 0;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   line-height: 1.35;
   white-space: pre-line;
 }
 
 .tutorial-next {
   color: var(--gold);
-  font-size: 0.66rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
 }
 
@@ -639,7 +639,7 @@ a {
   .game-switcher button {
     min-height: 26px;
     padding: 2px 6px;
-    font-size: 0.7rem;
+    font-size: 0.75rem;
   }
 
   .game-title-row h1 {
@@ -647,13 +647,13 @@ a {
   }
 
   .eyebrow {
-    font-size: 0.64rem;
+    font-size: 0.75rem;
   }
 
   .top-reset {
     min-height: 36px;
     padding: 5px 8px;
-    font-size: 0.72rem;
+    font-size: 0.75rem;
   }
 
   .stats {
@@ -666,7 +666,7 @@ a {
   }
 
   .stats span {
-    font-size: 0.56rem;
+    font-size: 0.75rem;
   }
 
   .stats strong {
@@ -702,7 +702,7 @@ a {
 
   .actions button {
     min-height: 42px;
-    font-size: 0.78rem;
+    font-size: 0.8rem;
   }
 
   .game-session {
@@ -730,6 +730,30 @@ a {
   }
 
   .actions button {
-    font-size: 0.72rem;
+    font-size: 0.75rem;
   }
+}
+
+.game-seo-copy {
+  width: min(1160px, calc(100% - 20px));
+  margin: 0 auto 28px;
+  color: #c8d6ce;
+}
+
+.game-seo-copy h2 {
+  margin: 0 0 8px;
+  color: #f2f0e2;
+  font-size: 1.15rem;
+}
+
+.game-seo-copy p {
+  max-width: 78ch;
+  margin: 6px 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.game-seo-copy a {
+  color: var(--accent);
+  font-weight: 750;
 }

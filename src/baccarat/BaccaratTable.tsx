@@ -5,12 +5,14 @@ import type { BaccaratController } from "./BaccaratController";
 import type { BaccaratOutcome, BaccaratState } from "./types";
 
 function Hand({
+  canReveal = false,
   cards,
   controller,
   dealt,
   player,
   revealed,
 }: {
+  canReveal?: boolean;
   cards: BaccaratState["playerCards"];
   controller: BaccaratController;
   dealt: boolean[];
@@ -24,7 +26,7 @@ function Hand({
           <PlayingCard
             card={card}
             hidden={player && revealed?.[index] === false}
-            interactive={player && revealed?.[index] === false}
+            interactive={player && canReveal && revealed?.[index] === false}
             key={`${card.label}-${card.suitName}-${index}`}
             label={`Flip Player card ${index + 1}`}
             onReveal={() => controller.revealPlayer(index)}
@@ -165,6 +167,7 @@ export function BaccaratTable({
           </span>
         </div>
         <Hand
+          canReveal={state.phase === "revealing"}
           cards={state.playerCards}
           controller={controller}
           dealt={state.dealtCards.player}

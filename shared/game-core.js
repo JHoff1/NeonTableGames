@@ -1,4 +1,25 @@
 (function initializeGameCore(global) {
+  const storageChannelName = "neontablegames-storage";
+  let storageChannel = null;
+  const storageSnapshots = new Map();
+
+  function getStorageChannel() {
+    if (typeof global.BroadcastChannel !== "function") return null;
+    if (!storageChannel) {
+      storageChannel = new global.BroadcastChannel(storageChannelName);
+      storageChannel.unref?.();
+    }
+    return storageChannel;
+  }
+
+  function currentStorageValue(key) {
+    try {
+      return global.localStorage?.getItem(key) ?? null;
+    } catch {
+      return null;
+    }
+  }
+
   const suits = [
     { name: "spades", symbol: "&spades;", color: "black" },
     { name: "hearts", symbol: "&hearts;", color: "red" },
@@ -141,6 +162,7 @@
 
   function setupCrossTabSync({ isActive, key }) {
     let dialog = null;
+    storageSnapshots.set(key, currentStorageValue(key));
 
     function showConflict() {
       if (!dialog) {
@@ -165,11 +187,26 @@
       if (!dialog.open) dialog.showModal();
     }
 
-    global.addEventListener("storage", (event) => {
-      if (event.key !== key || event.newValue === event.oldValue) return;
+    function handleUpdate(updatedKey, updatedValue = currentStorageValue(key)) {
+      if (updatedKey !== key) return;
+      if (updatedValue === storageSnapshots.get(key)) return;
+      storageSnapshots.set(key, updatedValue);
       if (isActive()) showConflict();
       else global.location.reload();
+    }
+
+    global.addEventListener("storage", (event) => {
+      if (event.newValue === event.oldValue) return;
+      handleUpdate(event.key, event.newValue);
     });
+    getStorageChannel()?.addEventListener("message", (event) => {
+      handleUpdate(event.data?.key, event.data?.record);
+    });
+
+    const reconciliationTimer = global.setInterval(() => {
+      handleUpdate(key, currentStorageValue(key));
+    }, 1000);
+    reconciliationTimer.unref?.();
 
     return { showConflict };
   }
@@ -231,13 +268,15 @@
 
     function write(data) {
       try {
-        storage?.setItem(
-          key,
-          JSON.stringify({
-            data: normalize(data),
-            version,
-          }),
-        );
+        const record = JSON.stringify({
+          data: normalize(data),
+          version,
+        });
+        storage?.setItem(key, record);
+        storageSnapshots.set(key, record);
+        const channel = getStorageChannel();
+        channel?.postMessage({ key, record });
+        global.setTimeout(() => channel?.postMessage({ key, record }), 250);
         return true;
       } catch {
         return false;

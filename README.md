@@ -43,7 +43,7 @@ wagering.
 - Versioned local persistence with unfinished-round recovery and cross-tab conflict
   handling.
 - Seeded debug mode for reproducing exact card sequences with `?seed=failed-test-42`.
-- Privacy-conscious first-party error reporting through a rate-limited Netlify Function.
+- Privacy-conscious first-party error reporting through a client-throttled, origin-validated Netlify Function.
 - Responsive and accessible interaction coverage across Chromium, Firefox, and WebKit.
 - Automated Lighthouse budgets and revision-aware smoke tests against the deployed site.
 
@@ -76,7 +76,7 @@ docs/                 Device QA checklist and project images
 
 ## Run Locally
 
-Requirements: Node.js 20 or newer.
+Requirements: Node.js 24.
 
 ```powershell
 npm ci

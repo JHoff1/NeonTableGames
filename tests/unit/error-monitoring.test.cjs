@@ -19,6 +19,16 @@ test("first-party error collector validates method, origin, and report type", as
     (
       await collector.handler({
         body: JSON.stringify({ type: "javascript" }),
+        headers: {},
+        httpMethod: "POST",
+      })
+    ).statusCode,
+    403,
+  );
+  assert.equal(
+    (
+      await collector.handler({
+        body: JSON.stringify({ type: "javascript" }),
         headers: { origin: "https://example.com" },
         httpMethod: "POST",
       })
@@ -34,5 +44,25 @@ test("first-party error collector validates method, origin, and report type", as
       })
     ).statusCode,
     400,
+  );
+  assert.equal(
+    (
+      await collector.handler({
+        body: "x".repeat(4097),
+        headers: { origin: "https://www.neontablegames.com" },
+        httpMethod: "POST",
+      })
+    ).statusCode,
+    413,
+  );
+  assert.equal(
+    (
+      await collector.handler({
+        body: JSON.stringify({ message: "Test error", type: "javascript" }),
+        headers: { origin: "https://www.neontablegames.com" },
+        httpMethod: "POST",
+      })
+    ).statusCode,
+    202,
   );
 });

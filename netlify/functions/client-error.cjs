@@ -1,4 +1,6 @@
 const allowedTypes = new Set(["asset", "javascript", "promise"]);
+const allowedOrigins = new Set(["https://neontablegames.com", "https://www.neontablegames.com"]);
+const maximumBodyLength = 4096;
 
 function text(value, maximum = 320) {
   return typeof value === "string" ? value.slice(0, maximum) : "";
@@ -10,11 +12,12 @@ exports.handler = async function handler(event) {
   }
 
   const origin = event.headers.origin || event.headers.Origin || "";
-  if (
-    origin &&
-    !["https://neontablegames.com", "https://www.neontablegames.com"].includes(origin)
-  ) {
+  if (!allowedOrigins.has(origin)) {
     return { statusCode: 403, body: "" };
+  }
+
+  if ((event.body || "").length > maximumBodyLength) {
+    return { statusCode: 413, body: "" };
   }
 
   try {

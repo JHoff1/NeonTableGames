@@ -213,6 +213,8 @@ test("an active Blackjack tab blocks stale writes from another tab", async ({ co
   await otherTab.route("https://www.googletagmanager.com/**", (route) => route.abort());
   await page.goto("/blackjack/?seed=cross-tab");
   await otherTab.goto("/blackjack/?seed=cross-tab");
+  await expect(page.locator('[data-chip="25"]')).toBeEnabled();
+  await expect(otherTab.locator('[data-chip="25"]')).toBeEnabled();
 
   await clickEnabled(page, '[data-chip="25"]');
   await expect(otherTab.locator("#message")).toContainText("Wager restored", {

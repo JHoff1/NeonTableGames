@@ -44,7 +44,7 @@
 
 .poker-hand-heading h2 {
   margin: 0;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   text-transform: uppercase;
 }
 
@@ -55,7 +55,7 @@
   border-radius: 6px;
   color: var(--gold);
   background: rgb(3 34 26 / 72%);
-  font-size: 0.58rem;
+  font-size: 0.75rem;
   font-weight: 900;
   text-align: center;
   text-transform: uppercase;
@@ -85,7 +85,7 @@
   padding: 6px;
   border-left: 3px solid var(--accent);
   background: rgb(3 34 26 / 72%);
-  font-size: 0.66rem;
+  font-size: 0.75rem;
   font-weight: 900;
   text-align: center;
   text-transform: uppercase;
@@ -93,7 +93,7 @@
 
 #poker-message {
   margin: 0;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-align: center;
 }
@@ -110,7 +110,7 @@
   border: 1px dashed rgb(240 199 94 / 52%);
   border-radius: 50%;
   color: #e7d38f;
-  font-size: 0.5rem;
+  font-size: 0.75rem;
   font-weight: 900;
   text-align: center;
   text-transform: uppercase;
@@ -131,7 +131,7 @@
   border-radius: 50%;
   color: #17140c;
   background: var(--gold);
-  font-size: 0.44rem;
+  font-size: 0.65rem;
   place-items: center;
 }
 
@@ -165,7 +165,7 @@
 
 .poker-bet-target strong {
   color: var(--muted);
-  font-size: 0.58rem;
+  font-size: 0.75rem;
 }
 
 .poker-bet-target[aria-pressed="true"] {
@@ -224,7 +224,7 @@
   }
 
   #poker-message {
-    font-size: 0.61rem;
+    font-size: 0.75rem;
   }
 
   .poker-controls {
@@ -233,7 +233,7 @@
 
   .poker-bet-target {
     min-height: 38px;
-    font-size: 0.7rem;
+    font-size: 0.75rem;
   }
 
   .wager-action-row {

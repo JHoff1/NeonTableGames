@@ -5,3 +5,4 @@ test-results/
 deployment-version.json
 lighthouse-report/
 .lighthouseci/
+.lighthouse-profile/

@@ -23,6 +23,7 @@ const legacyFiles = [
   "deployment-version.json",
   "favicon.svg",
   "robots.txt",
+  "social-preview.png",
   "site.webmanifest",
   "sitemap.xml",
 ];
