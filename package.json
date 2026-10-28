@@ -27,7 +27,7 @@
     "@playwright/test": "^1.64.1",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "@typescript-eslint/eslint-plugin": "^8.71.2",
+    "@typescript-eslint/eslint-plugin": "^8.72.0",
     "@typescript-eslint/parser": "^8.71.2",
     "@vitejs/plugin-react": "^4.7.0",
     "chrome-launcher": "^1.2.2",
@@ -37,7 +37,7 @@
     "lighthouse": "^13.5.0",
     "prettier": "^3.9.10",
     "typescript": "^5.9.3",
-    "vite": "^6.4.4"
+    "vite": "^6.4.5"
   },
   "dependencies": {
     "lucide-react": "^1.58.0",
